@@ -1,41 +1,116 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const { src, dest } = require('gulp');
-const tap = require('gulp-tap');
+const execSync = require('child_process').execSync;
+const program = require('commander');
+const updateNotifier = require('update-notifier');
+const nksf2ogg = require('../lib/bitwig-nks-preview-generator');
+const pkg = require('../package.json');
+const notifier = updateNotifier({pkg});
 
-const startBitwigStudio = require('../lib/bitwig-studio-automation');
-const nksf2fxb = require('../lib/gulp-nksf2fxb');
+const isWSL = () => {
+  return process.platform === 'linux' &&
+    os.release().includes('Microsoft') &&
+    fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+};
 
-const PLUGIN_ID = 'UVIW';
-const TEST_NKSF_FOLDER = `${process.env.HOME}/Documents/Native Instruments/Custom NKS/Key Suite Digital/Digital 330`;
-const PREVIEW_CHORD_CLIP = path.resolve(path.join(__dirname, 'Bitwig Studio Files/NKS-Preview-Chord.bwclip'));
+const wslWinProgramFiles = () => {
+  return child_process.execSync('wslpath $(cmd.exe /C "echo %PROGRAMFILES%")')
+    .toString().replace(/[\r\n]+$/g, '');
+};
 
-function pipelineProcess(dir, bitwig) {
-  return new Promise((resolve, reject) => {
-    console.log('#main', 'generate pipeline start');
-    src(`${dir}/**/*.nksf`)
-      .pipe(nksf2fxb())
-      .pipe(dest('temp/fxb'))
-      .pipe(bitwig.gulpBounce())
-      .pipe(dest('temp/wav'))
-      .on('error', (err)=> {
-        reject(err);
-      })
-      .on('end', ()=> {
-        resolve();
-      });
-  }); 
+const defaultBitwigCommand = () => {
+  switch (process.platform) {
+  case 'win32':
+    return path.join(process.env('PROGRAMFILES'), 'Bitwig Studio', 'Bitwig Studio.exe');
+  case 'darwin':
+    return '/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio';
+  case 'linux':
+    if (isWSL()) {
+      return path.join(wslWinProgramFiles(), 'Bitwig Studio', 'Bitwig Studio.exe');
+    } else {
+      return '/user/bin/bitwig-studio';
+    }
+  default:
+    throw new Error(`Unsupported Platform:[${process.platform}].`);
+  }
+}; 
+
+if (notifier.update && notifier.update.latest !== pkg.version) {
+    notifier.notify({
+      defer: false,
+      isGlobal: false
+    });
 }
 
-(async () => {
+program
+  .description(pkg.description)
+  .arguments('[targetDirs...]')
+  .option('-b, --bitwig <path>',             'execution path of Bitwig Studio.', defaultBitwigCommand())
+  .option('-c, --clip <path>',               'path of .bwclip file or .js clip mapper program.', path.resolve(__dirname, '../Bitwig Studio Files/NKS-Preview-Chord.bwclip'))
+  .option('-f, --fxb <path>',                'path for store imtermediate .fxb files.', 'temp/fxb')
+  .option('-w, --wav <path>',                'path for store imtermediate .wav files.', 'temp/wav')
+  .option('-i, --timeout-bitwig <millisec>', 'timeout millis for launching Bitwig Studio.', parseInt, 30000)
+  .option('-p, --wait-plugin <millisec>',    'wait time for loading plugin.', parseInt, 5000)
+  .option('-r, --wait-preset <millisec>',    'wait time for loading .fxb preset.', parseInt, 3000)
+  .option('-o, --wait-bounce <millisec>',    'wait time for bouncing clip.', parseInt, 2000)
+  .option('-n, --wait-undo <millisec>',      'wait time for undo bouncing clip.', parseInt, 1500)
+  .option('-u, --url <URL>',                 'WebSockets server URL.', 'ws://localhost:8887')
+  .option('-v, --version', pkg.version, () => {
+    console.log(pkg.version);
+    process.exit(0);
+  })
+  .option('-V', '', () => {
+    console.log(pkg.version);
+    process.exit(0);
+  })
+  .parse(process.argv);
+
+if (program.args.length === 0) {
+  console.error('\nError: unspecied traget diretories.\n');
+  program.help();
+  process.exit(1);
+}
+const clipExt = path.extname(program.clip);
+if (clipExt !== '.bwclip' && clipExt !== '.js') {
+  console.error('\nError: unsupported clip option.\n');
+  program.help();
+  process.exit(1);
+}
+if (!(fs.existsSync(program.clip) &&
+      fs.statSync(program.clip).isFile())) {
+  console.error("\nError: couldn't find file for --clip option.\n");
+  program.help();
+  process.exit(1);
+}
+
+if (clipExt === '.js') {
+  var mapperFn;
   try {
-    const bitwig = await startBitwigStudio();
-    await bitwig.loadResources(PLUGIN_ID, PREVIEW_CHORD_CLIP);
-    console.log('#main', 'bitwig studio ready');
-    await bitwig.waitForFocusWindowAndClip();
-    await pipelineProcess(TEST_NKSF_FOLDER, bitwig);
-    await bitwig.quit();
+    if (path.isAbsolute(program.clip)) {
+      mapperFn = require(program.clip);
+    } else {
+      console.log(path.resolve(program.clip));
+      mapperFn = require(path.resolve(program.clip));
+    }
+    if (typeof mapperFn !== 'function') {
+      throw new Error();
+    }
+    program.clip = mapperFn;
   } catch (err) {
-    console.error(err);
-    await bitwig.quit();
+    console.error("\nError: couldn't load clip mapper function.\n");
+    program.help();
+    process.exit(1);
   }
-})();
+}
+
+try {
+  program.args.forEach(async (dir) => {
+    await nksf2ogg.promised(dir, program);
+  });
+} catch (err) {
+  console.error(err);
+  process.exit(1);
+}
