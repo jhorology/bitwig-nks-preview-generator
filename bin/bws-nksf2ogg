@@ -1,0 +1,41 @@
+const path = require('path');
+const { src, dest } = require('gulp');
+const tap = require('gulp-tap');
+
+const startBitwigStudio = require('../lib/bitwig-studio-automation');
+const nksf2fxb = require('../lib/gulp-nksf2fxb');
+
+const PLUGIN_ID = 'UVIW';
+const TEST_NKSF_FOLDER = `${process.env.HOME}/Documents/Native Instruments/Custom NKS/Key Suite Digital/Digital 330`;
+const PREVIEW_CHORD_CLIP = path.resolve(path.join(__dirname, 'Bitwig Studio Files/NKS-Preview-Chord.bwclip'));
+
+function pipelineProcess(dir, bitwig) {
+  return new Promise((resolve, reject) => {
+    console.log('#main', 'generate pipeline start');
+    src(`${dir}/**/*.nksf`)
+      .pipe(nksf2fxb())
+      .pipe(dest('temp/fxb'))
+      .pipe(bitwig.gulpBounce())
+      .pipe(dest('temp/wav'))
+      .on('error', (err)=> {
+        reject(err);
+      })
+      .on('end', ()=> {
+        resolve();
+      });
+  }); 
+}
+
+(async () => {
+  try {
+    const bitwig = await startBitwigStudio();
+    await bitwig.loadResources(PLUGIN_ID, PREVIEW_CHORD_CLIP);
+    console.log('#main', 'bitwig studio ready');
+    await bitwig.waitForFocusWindowAndClip();
+    await pipelineProcess(TEST_NKSF_FOLDER, bitwig);
+    await bitwig.quit();
+  } catch (err) {
+    console.error(err);
+    await bitwig.quit();
+  }
+})();
