@@ -49,7 +49,7 @@ program
   .description(pkg.description)
   .arguments('[targetDirs...]')
   .option('-b, --bitwig <path>',             'execution path of Bitwig Studio.', defaultBitwigCommand())
-  .option('-c, --clip <path>',               'path of .bwclip file or .js clip mapper program.', path.resolve(__dirname, '../Bitwig Studio Files/NKS-Preview-Chord.bwclip'))
+  .option('-c, --clip <path>',               'path of .bwclip file or .js clip mapper program.', path.resolve(__dirname, '../Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip'))
   .option('-f, --fxb <path>',                'path for store imtermediate .fxb files.', 'temp/fxb')
   .option('-w, --wav <path>',                'path for store imtermediate .wav files.', 'temp/wav')
   .option('-i, --timeout-bitwig <millisec>', 'timeout millis for launching Bitwig Studio.', parseInt, 30000)
