@@ -4,6 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const execSync = require('child_process').execSync;
+const log = require('fancy-log');
 const program = require('commander');
 const updateNotifier = require('update-notifier');
 const nksf2ogg = require('../lib/bitwig-nks-preview-generator');
@@ -47,7 +48,7 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
 
 program
   .description(pkg.description)
-  .arguments('[targetDirs...]')
+  .arguments('<targetDir>')
   .option('-b, --bitwig <path>',             'execution path of Bitwig Studio.', defaultBitwigCommand())
   .option('-u, --url <URL>',                 'WebSockets server URL.', 'ws://localhost:8887')
   .option('-c, --clip <path>',               'path of .bwclip file or .js clip mapper program.', path.resolve(__dirname, '../Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip'))
@@ -74,7 +75,7 @@ program
   .parse(process.argv);
 
 if (program.args.length === 0) {
-  console.error('\nError: unspecied traget diretories.\n');
+  console.error('\nError: unspecied a traget diretory.\n');
   program.help();
   process.exit(1);
 }
@@ -111,11 +112,14 @@ if (clipExt === '.js') {
   }
 }
 
-try {
-  program.args.forEach(async (dir) => {
-    await nksf2ogg.promised(dir, program);
+const targetDir = program.args[0];
+
+log('Start processing target diretroy:', targetDir);
+nksf2ogg.promised(targetDir, program)
+  .then(() => {
+    log('Complete processing target diretroy:', targetDir);
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
   });
-} catch (err) {
-  console.error(err);
-  process.exit(1);
-}
