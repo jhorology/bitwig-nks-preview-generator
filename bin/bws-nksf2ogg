@@ -7,62 +7,38 @@ const execSync = require('child_process').execSync;
 const log = require('fancy-log');
 const program = require('commander');
 const updateNotifier = require('update-notifier');
-const nksf2ogg = require('../lib/bitwig-nks-preview-generator');
+const glob = require('glob');
+const rimraf = require('rimraf');
 const pkg = require('../package.json');
+const nksf2ogg = require('../lib/bitwig-nks-preview-generator');
+const Local = require('../lib/bitwig-studio-local');
 const notifier = updateNotifier({pkg});
-
-const isWSL = () => {
-  return process.platform === 'linux' &&
-    os.release().includes('Microsoft') &&
-    fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
-};
-
-const wslWinProgramFiles = () => {
-  return child_process.execSync('wslpath $(cmd.exe /C "echo %PROGRAMFILES%")')
-    .toString().replace(/[\r\n]+$/g, '');
-};
-
-const defaultBitwigCommand = () => {
-  switch (process.platform) {
-  case 'win32':
-    return path.join(process.env('PROGRAMFILES'), 'Bitwig Studio', 'Bitwig Studio.exe');
-  case 'darwin':
-    return '/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio';
-  case 'linux':
-    if (isWSL()) {
-      return path.join(wslWinProgramFiles(), 'Bitwig Studio', 'Bitwig Studio.exe');
-    } else {
-      return '/user/bin/bitwig-studio';
-    }
-  default:
-    throw new Error(`Unsupported Platform:[${process.platform}].`);
-  }
-}; 
+const defaultMIDIClip = path.resolve(__dirname, '../Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip');
 
 if (notifier.update && notifier.update.latest !== pkg.version) {
     notifier.notify({
-      defer: false,
-      isGlobal: false
+      defer: false
     });
 }
 
 program
   .description(pkg.description)
   .arguments('<targetDir>')
-  .option('-b, --bitwig <path>',             'execution path of Bitwig Studio.', defaultBitwigCommand())
+  .option('-x, --clean',                     'cleanup .prevews folder recusively. do not execute converter process.', false)
+  .option('-b, --bitwig <path>',             'execution path of Bitwig Studio.', Local.defaultExecuteFile())
   .option('-u, --url <URL>',                 'WebSockets server URL.', 'ws://localhost:8887')
-  .option('-c, --clip <path>',               'path of .bwclip file or .js clip mapper program.', path.resolve(__dirname, '../Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip'))
-  .option('-f, --fxb <path>',                'path for store imtermediate .fxb files.', 'temp/fxb')
-  .option('-w, --wav <path>',                'path for store imtermediate .wav files.', 'temp/wav')
-  .option('-i, --timeout-bitwig <millisec>', 'timeout millis for launching Bitwig Studio.', parseInt, 30000)
-  .option('-p, --wait-plugin <millisec>',    'wait time for loading plugin.', parseInt, 5000)
-  .option('-r, --wait-preset <millisec>',    'wait time for loading .fxb preset.', parseInt, 3000)
-  .option('-b, --wait-bounce <millisec>',    'wait time for bouncing clip.', parseInt, 2000)
+  .option('-c, --clip <path>',               'file path of .bwclip or .js mapper program.', defaultMIDIClip)
+  .option('-f, --fxb <path>',                'folder path for store intermediate .fxb files.', 'temp/fxb')
+  .option('-w, --wav <path>',                'folder path for store intermediate .wav files.', 'temp/wav')
+  .option('-i, --timeout <millis>',          'timeout millis for launching Bitwig Studio.', parseInt, 30000)
+  .option('-p, --wait-plugin <millis>',      'wait time for loading plugin.', parseInt, 5000)
+  .option('-r, --wait-preset <millis>',      'wait time for loading .fxb preset.', parseInt, 3000)
+  .option('-b, --wait-bounce <millis>',      'wait time for bouncing clip.', parseInt, 2000)
   .option('-u, --wait-undo <millisec>',      'wait time for undo bouncing clip.', parseInt, 1500)
   .option('-m, --tempo <BPM>',               'BPM for bouncing clip.', parseInt, 120)
-  .option('-f, --freq <Hz>',                 'the sampling rate of preview audio.', parseInt, 441000)
-  .option('-o, --fadeout <samples>',         'the number of samples for fadeout.', parseInt, 110250)
-  .option('-r, --silence <dB>',              'threshold for removing silnce from preview end.', '-90dB')
+  .option('-f, --freq <Hz>',                 '.ogg audio sampling rate.', parseInt, 441000)
+  .option('-o, --fadeout <samples>',         'number of samples for fadeout.', parseInt, 110250)
+  .option('-r, --silence <dB>',              'threshold level for removing silnce from end.', '-90dB')
   .option('-q, --quality <number>',          'quality of ogg compression. 0-10.', parseInt, 5)
   .option('-v, --version', pkg.version, () => {
     console.log(pkg.version);
@@ -75,10 +51,20 @@ program
   .parse(process.argv);
 
 if (program.args.length === 0) {
-  console.error('\nError: unspecied a traget diretory.\n');
+  console.error('\nError: Unspecied a traget diretory.\n');
   program.help();
   process.exit(1);
 }
+
+const targetDir = program.args[0];
+
+if (!(fs.existsSync(targetDir) &&
+      fs.statSync(targetDir).isDirectory())) {
+  console.error("\nError: Target directory doesn't exist.\n");
+  program.help();
+  process.exit(1);
+}
+
 const clipExt = path.extname(program.clip);
 if (clipExt !== '.bwclip' && clipExt !== '.js') {
   console.error('\nError: unsupported clip option.\n');
@@ -92,34 +78,43 @@ if (!(fs.existsSync(program.clip) &&
   process.exit(1);
 }
 
+if (!path.isAbsolute(program.clip)) {
+  program.clip = path.resolve(program.clip);
+}
+
 if (clipExt === '.js') {
-  var mapperFn;
   try {
-    if (path.isAbsolute(program.clip)) {
-      mapperFn = require(program.clip);
-    } else {
-      console.log(path.resolve(program.clip));
-      mapperFn = require(path.resolve(program.clip));
+    const mapperDirname = path.dirname(program.clip);
+    const userMapperFn = require(program.clip);
+    if (typeof userMapperFn !== 'function') {
+      throw new Error('mapper .js should export function');
     }
-    if (typeof mapperFn !== 'function') {
-      throw new Error();
-    }
-    program.clip = mapperFn;
+    // wwrap user function to convert absolute path
+    program.clip = (soundInfo) => {
+      const result = userMapperFn(soundInfo);
+      if (!path.isAbsolute(result)) {
+        return path.resolve(mapperDirname, result);
+      }
+      return result;
+    };
   } catch (err) {
-    console.error("\nError: couldn't load clip mapper function.\n");
+    console.error('\nError:' + err.message + '\n');
     program.help();
     process.exit(1);
   }
 }
 
-const targetDir = program.args[0];
+// for debug
+process.on('unhandledRejection', (reason, p) => {
+  log.error('###### Unhandled Rejection at: Promise', p, 'reason:', reason);
+});
 
-log('Start processing target diretroy:', targetDir);
-nksf2ogg.promised(targetDir, program)
-  .then(() => {
-    log('Complete processing target diretroy:', targetDir);
-  })
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+if (program.clean) {
+  rimraf.sync(`${targetDir}/**/.previews`);
+} else {
+  log('Start processing target diretroy:', targetDir);
+  nksf2ogg(targetDir, program)
+    .on('end', () => {
+      log('Complete processing target diretroy:', targetDir);
+    });
+}

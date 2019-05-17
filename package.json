@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/jhorology/bitwig-nks-preview-generator",
   "bin": {
-    "install-bitwig-extension": "./bin/install-bitwig-extension",
     "bws-nksf2ogg": "./bin/bws-nksf2ogg"
   },
   "dependencies": {
@@ -33,9 +32,8 @@
     "riff-reader": "0.0.10",
     "rimraf": "^2.6.3",
     "rpc-websockets": "^4.3.5",
-    "stable": "^0.1.8",
-    "stream-buffer": "^1.0.0",
     "stream-buffers": "^3.0.2",
+    "tmp": "^0.1.0",
     "update-notifier": "^3.0.0"
   }
 }
