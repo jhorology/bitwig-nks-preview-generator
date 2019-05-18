@@ -23,6 +23,7 @@ try-and-error.coffee
 .eslintcache
 coverage
 .vscode
+.previews
 npm-debug.log
 yarn-error.log
 package-lock.json
