@@ -1,120 +1,238 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const execSync = require('child_process').execSync;
-const log = require('fancy-log');
+
 const program = require('commander');
 const updateNotifier = require('update-notifier');
-const glob = require('glob');
 const rimraf = require('rimraf');
-const pkg = require('../package.json');
+const glob = require('glob');
+const Confirm = require('prompt-confirm');
 const nksf2ogg = require('../lib/bitwig-nks-preview-generator');
 const Local = require('../lib/bitwig-studio-local');
+const pkg = require('../package.json');
 const notifier = updateNotifier({pkg});
-const defaultMIDIClip = path.resolve(__dirname, '../Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip');
 
 if (notifier.update && notifier.update.latest !== pkg.version) {
-    notifier.notify({
-      defer: false
-    });
+  notifier.notify({
+    defer: false
+  });
 }
+const defaults = nksf2ogg.defaultOptions;
+const descs = nksf2ogg.optionsDescriptions;
 
 program
   .description(pkg.description)
-  .arguments('<targetDir>')
-  .option('-x, --clean',                     'cleanup .prevews folder recusively. do not execute converter process.', false)
-  .option('-b, --bitwig <path>',             'execution path of Bitwig Studio.', Local.defaultExecuteFile())
-  .option('-u, --url <URL>',                 'WebSockets server URL.', 'ws://localhost:8887')
-  .option('-c, --clip <path>',               'file path of .bwclip or .js mapper program.', defaultMIDIClip)
-  .option('-f, --fxb <path>',                'folder path for store intermediate .fxb files.', 'temp/fxb')
-  .option('-w, --wav <path>',                'folder path for store intermediate .wav files.', 'temp/wav')
-  .option('-i, --timeout <msec>',            'timeout millis for launching Bitwig Studio.', parseInt, 30000)
-  .option('-p, --wait-plugin <msec>',        'wait time for loading plugin.', parseInt, 5000)
-  .option('-r, --wait-preset <msec>',        'wait time for loading .fxb preset.', parseInt, 1500)
-  .option('-b, --wait-bounce <msec>',        'wait time for bouncing clip.', parseInt, 500)
-  .option('-u, --wait-undo <msec>',          'wait time for undo bouncing clip.', parseInt, 500)
-  .option('-m, --tempo <BPM>',               'BPM for bouncing clip.', parseInt, 120)
-  .option('-f, --freq <Hz>',                 '.ogg audio sampling rate.', parseInt, 441000)
-  .option('-o, --fadeout <samples>',         'number of samples for fadeout.', parseInt, 110250)
-  .option('-r, --silence <dB>',              'threshold level for removing silnce from end.', '-90dB')
-  .option('-q, --quality <number>',          'quality of ogg compression. 0-10.', parseInt, 5)
-  .option('-v, --version', pkg.version, () => {
-    console.log(pkg.version);
-    process.exit(0);
-  })
-  .option('-V', '', () => {
-    console.log(pkg.version);
-    process.exit(0);
-  })
-  .parse(process.argv);
+  .version(pkg.version);
 
-if (program.args.length === 0) {
-  console.error('\nError: Unspecified target directory.\n');
-  program.help();
-  process.exit(1);
+program
+  .command('exec <dir>')
+  .description('Generate preview audio from .nksf preset files.')
+  .option('-b, --bitwig <path>',             descs.bitwig,      defaults.bitwig)
+  .option('-u, --url <URL>',                 descs.url,         defaults.url)
+  .option('-s, --skip-error',                descs.skipError)
+  .option('-k, --skip-exist',                descs.skipExist)
+  .option('-h, --show-plugin',               descs.showPlugin)
+  .option('-c, --clip <path>',               descs.clip,        defaults.clip)
+  .option('-f, --fxb <path>',                descs.fxb,         defaults.fxb)
+  .option('-w, --wav <path>',                descs.wav,         defaults.wav)
+  .option('-t, --timeout <msec>',            descs.timeout,     parseInt, defaults.timeout)
+  .option('-w, --wait-plugin <msec>',        descs.waitPlugin,  parseInt, defaults.waitPlugin)
+  .option('-a, --wait-preset <msec>',        descs.waitPreset,  parseInt, defaults.waitPreset)
+  .option('-i, --wait-bounce <msec>',        descs.waitBounce,  parseInt, defaults.waitBounce)
+  .option('-u, --wait-undo <msec>',          descs.waitUndo,    parseInt, defaults.waitUndo)
+  .option('-e, --tempo <BPM>',               descs.tempo,       parseInt, defaults.tempo)
+  .option('-f, --freq <Hz>',                 descs.freq,        parseInt, defaults.freq)
+  .option('-d, --fadeout <samples>',         descs.fadeout,     parseInt, defaults.fadeout)
+  .option('-l, --silence <dB>',              descs.silence,     parseInt, defaults.silence)
+  .option('-q, --quality <number>',          descs.quality,     parseInt, defaults.quality)
+  .action(execCommand);
+
+program
+  .command('install')
+  .description('Install Bitwig Studio WebSockets RPC server extension.')
+  .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', Local.defaultExtensionDir())
+  .action(installCommand);
+
+program
+  .command('list <dir>')
+  .description('List .nksf or .nksf.ogg files.')
+  .option('-a, --absolute', 'list files as absolute path', false)
+  .option('-r, --relative', 'list files as relative path from <dir>', false)
+  .option('-m, --missing',  "list preset files that doesn't have preview", false)
+  .option('-u, --useless',  "list preview files that doesn't have preset", false)
+  .action(listCommand);
+
+program
+  .command('clean <dir>')
+  .description('Delete .previews folders.')
+  .option('-y, --yes', 'no comfirmation', false)
+  .action(cleanCommand);
+
+program.parse(process.argv);
+
+/**
+ * install Bitwig Studio Extension.
+ * @param {Object} options
+ */
+function installCommand(options) {
+  _checkDir(options.extensionDir);
+  const basename = 'WebSocketRpcServer.bwextension';
+  const src = path.resolve(__dirname, '../node_modules/bitwig-websocket-rpc', basename);
+  const dest = path.join(options.extensionDir, basename);
+  _checkFile(src);
+  fs.copyFileSync(src, dest);
+  console.info('file:', dest);
+  console.info('Installation completed successfull.');
 }
 
-const targetDir = program.args[0];
-
-if (!(fs.existsSync(targetDir) &&
-      fs.statSync(targetDir).isDirectory())) {
-  console.error("\nError: Target directory doesn't exist.\n");
-  program.help();
-  process.exit(1);
-}
-
-const clipExt = path.extname(program.clip);
-if (clipExt !== '.bwclip' && clipExt !== '.js') {
-  console.error('\nError: Unsupported clip option.\n');
-  program.help();
-  process.exit(1);
-}
-if (!(fs.existsSync(program.clip) &&
-      fs.statSync(program.clip).isFile())) {
-  console.error("\nError: Couldn't find file for --clip option.\n");
-  program.help();
-  process.exit(1);
-}
-
-if (!path.isAbsolute(program.clip)) {
-  program.clip = path.resolve(program.clip);
-}
-
-if (clipExt === '.js') {
-  try {
-    const mapperDirname = path.dirname(program.clip);
-    const userMapperFn = require(program.clip);
-    if (typeof userMapperFn !== 'function') {
-      throw new Error('Clip mapper .js should export function');
+/**
+ * List .nksf or .nksf.ogg files
+ * @param {String} dir
+ * @param {Object} options
+ */
+function listCommand(dir, options) {
+  _checkDir(dir);
+  const pattern = options.missing ?
+        `${dir}/**/*.nksf` :
+        `${dir}/**/.previews/*.nksf.ogg`;
+  const filter = options.missing ?
+        _hasNotPreview :
+        (options.useless ? _hasNotPreset : undefined);
+  const files = _glob(pattern, filter);
+  files.forEach(file => {
+    if (options.absolute) {
+      file = path.resolve(file);
+    } else if (options.relative) {
+      file = path.relative(dir, file);
     }
-    // wwrap user function to convert absolute path
-    program.clip = (soundInfo) => {
-      const result = userMapperFn(soundInfo);
-      if (!path.isAbsolute(result)) {
-        return path.resolve(mapperDirname, result);
-      }
-      return result;
-    };
-  } catch (err) {
-    console.error('\nError:' + err.message + '\n');
-    program.help();
+    console.info(file);
+  });
+}
+
+/**
+ * Delete .previews folders
+ * @param {String} dir
+ * @param {Object} options
+ */
+function cleanCommand(dir, options) {
+  _checkDir(dir);
+  const folders = _glob(`${dir}/**/.previews/`);
+  if (!folders.length) {
+    console.info('".previews" folders are not found.');
+    return;
+  }
+  if (options.yes) {
+    rimraf.sync(`${dir}/**/.previews`);
+    return;
+  }
+  new Confirm(
+    `Founded ${folders.length} folders. ` +
+      'Are you sure to delete all the ".previews" folders ?'
+  ).ask(ans => {
+    if (ans) {
+      rimraf.sync(`${dir}/**/.previews`);
+    }      
+  });
+}
+
+/**
+ * Generate preview audio from preset files
+ * @param {String} dir
+ * @param {Object} options
+ */
+function execCommand(dir, options) {
+  _checkDir(dir);
+  _checkFile(options.bitwig);
+  _checkFile(options.clip);
+  
+  const clipExt = path.extname(options.clip);
+  if (clipExt !== '.bwclip' && clipExt !== '.js') {
+    console.error('error: unsupported --clip <path> option.');
+    process.exit(1);
+  }
+  
+  if (clipExt === '.js') {
+    _checkJsFunction(options.clip);
+  }
+
+  const files = _glob(`${dir}/**/*.nksf`,
+                      options.skipExist ? _hasNotPreview : undefined);
+
+  if (!files.length) {
+    console.info('Target ".nksf" files are not found.');
+    return;
+  }
+  
+  // for debug
+  process.on('unhandledRejection', (reason, p) => {
+    log.error('###### Unhandled Rejection at: Promise', p, 'reason:', reason);
+  });
+
+  nksf2ogg(dir, options, files.length);
+}
+
+function _checkDir(dir) {
+  if (!fs.existsSync(dir)) {
+    console.error(`error: no such directory, "${dir}"`);
+    process.exit(1);
+  }
+  if (!fs.statSync(dir).isDirectory()) {
+    console.error(`error: no such directory, "${dir}"`);
     process.exit(1);
   }
 }
 
-// for debug
-process.on('unhandledRejection', (reason, p) => {
-  log.error('###### Unhandled Rejection at: Promise', p, 'reason:', reason);
-});
-
-if (program.clean) {
-  rimraf.sync(`${targetDir}/**/.previews`);
-} else {
-  log('Start processing target diretroy:', targetDir);
-  nksf2ogg(targetDir, program)
-    .on('end', () => {
-      log('Complete processing target diretroy:', targetDir);
-    });
+function _checkFile(file) {
+  if (!fs.existsSync(file)) {
+    console.error(`error: no such file, "${file}"`);
+    process.exit(1);
+  }
+  if (!fs.statSync(file).isFile()) {
+    console.error(`error: no such file, "${file}"`);
+    process.exit(1);
+  }
 }
+
+function _checkJsFunction(file) {
+  let fn;
+  try {
+    fn = require(path.resolve(file));
+  } catch (err) {
+    console.info(err);
+    process.exit(1);
+  }
+  if (typeof fn !== 'function') {
+    console.error('error: --clip <path> .js file should export function');
+    process.exit(1);
+  }
+}
+
+function _glob(pattern, filter) {
+  let files = glob.sync(pattern);
+  if (filter) {
+    files = files.filter(filter);
+  }
+  return files;
+}
+
+function _hasPreview(file) {
+  const preview = path.join(path.dirname(file), '.previews', path.basename(file) + '.ogg');
+  return fs.existsSync(preview);
+}
+
+function _hasNotPreview(file) {
+  return !_hasPreview(file);
+
+}
+
+function _hasPreset(file) {
+  const preset = path.resolve(path.dirname(file), '..', path.basename(file, '.ogg'));
+  return fs.existsSync(preset);
+}
+
+function _hasNotPreset(file) {
+  return !_hasPreset();
+}
+
