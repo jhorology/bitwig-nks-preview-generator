@@ -84,7 +84,7 @@ function installCommand(options) {
   _checkFile(src);
   fs.copyFileSync(src, dest);
   console.info('file:', dest);
-  console.info('Installation completed successfull.');
+  console.info('Installation completed successfully.');
 }
 
 /**
@@ -166,11 +166,17 @@ function execCommand(dir, options) {
   }
   
   // for debug
-  process.on('unhandledRejection', (reason, p) => {
-    log.error('###### Unhandled Rejection at: Promise', p, 'reason:', reason);
-  });
+  // process.on('unhandledRejection', (reason, p) => {
+  //   console.log('###### Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // });
 
-  nksf2ogg(dir, options, files.length);
+  nksf2ogg(dir, options, files.length, function(err, summary) {
+    if (err) {
+      console.error(err);
+      process.exitt(1);
+    }
+    console.info('Execution completed successfully. resilt summary:', summary);
+  });
 }
 
 function _checkDir(dir) {
