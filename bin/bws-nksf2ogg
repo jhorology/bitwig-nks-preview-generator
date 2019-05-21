@@ -133,7 +133,7 @@ function cleanCommand(dir, options) {
   ).ask(ans => {
     if (ans) {
       rimraf.sync(`${dir}/**/.previews`);
-    }      
+    }
   });
 }
 
@@ -146,13 +146,13 @@ function execCommand(dir, options) {
   _checkDir(dir);
   _checkFile(options.bitwig);
   _checkFile(options.clip);
-  
+
   const clipExt = path.extname(options.clip);
   if (clipExt !== '.bwclip' && clipExt !== '.js') {
     console.error('error: unsupported --clip <path> option.');
     process.exit(1);
   }
-  
+
   if (clipExt === '.js') {
     _checkJsFunction(options.clip);
   }
@@ -164,7 +164,7 @@ function execCommand(dir, options) {
     console.info('Target ".nksf" files are not found.');
     return;
   }
-  
+
   // for debug
   // process.on('unhandledRejection', (reason, p) => {
   //   console.log('###### Unhandled Rejection at: Promise', p, 'reason:', reason);
@@ -218,7 +218,9 @@ function _checkJsFunction(file) {
 function _glob(pattern, filter) {
   let files = glob.sync(pattern);
   if (filter) {
-    files = files.filter(filter);
+    files = files.filter((f) =>{
+      return filter(f);
+    });
   }
   return files;
 }
@@ -230,7 +232,6 @@ function _hasPreview(file) {
 
 function _hasNotPreview(file) {
   return !_hasPreview(file);
-
 }
 
 function _hasPreset(file) {
@@ -239,6 +240,5 @@ function _hasPreset(file) {
 }
 
 function _hasNotPreset(file) {
-  return !_hasPreset();
+  return !_hasPreset(file);
 }
-
