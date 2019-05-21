@@ -9,6 +9,7 @@ Publishing NPM package soon.
 - ffmpeg version 4.1.3 or above.
 - node.js v8 or above.
 
+
 ## Installation
 ```sh
 # or global install
@@ -81,9 +82,9 @@ bws-nksf2ogg install
       -h, --help  output usage information
 
 ## MIDI clip mapper
-Mapper .js program allows for mapping NKS sound infomation to your original MIDI clip.
+Mapper .js program allows for mapping NKS sound infomation to your custom MIDI clip.
 ```sh
-bws-nksf2ogg --clip clip-mapper-example.js <targetDiretory>
+bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
 ```
 An example:
 ```js
@@ -108,3 +109,19 @@ module.exports = function(soundInfo) {
 };
 
 ```
+
+## Generating Preview Audio
+1. Close Bitwig studio application if already it's opened.
+1. Execute `bws-nks2ogg exec [options] <dir>` command on terminal.
+1. Bitwig Studio will automatically launch after command.
+1. If you see popup message "Please click first clip", Click (not launch) the clip at Track 1, Slot 1.
+1. Don't touch anything on Bitwig Studio window while program is processing.
+
+## Adjust Timings
+hogehoge...
+
+## Notes
+- Will support macOS, Windows and WSL. (Currently tested only macOS)
+
+## License
+[MIT](LICENSE)
