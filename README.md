@@ -70,6 +70,7 @@ bws-nksf2ogg install
       -r, --relative  list files as relative path from <dir>
       -m, --missing   list preset files that doesn't have preview
       -u, --useless   list preview files that doesn't have preset
+      -f, --ffprobe   list files as result of ffprobe
       -h, --help      output usage information
     
     $ bws-nksf2ogg clean --help
