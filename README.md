@@ -12,7 +12,7 @@ Publishing NPM package soon.
 
 ## Installation
 ```sh
-# or global install
+# global install
 npm install bitwig-nks-preview-generator -g
 # install Bitwig Studio Extension
 bws-nksf2ogg install
@@ -49,10 +49,10 @@ bws-nksf2ogg install
       -f, --fxb <path>          directory for store intermediate .fxb files (default: "temp/fxb")
       -w, --wav <path>          directory for store intermediate .wav files (default: "temp/wav")
       -t, --timeout <msec>      timeout msec for launch & connect Bitwig Studio (default: 30000)
-      -w, --wait-plugin <msec>  wait msec for loading plugin (default: 5000)
-      -a, --wait-preset <msec>  wait msec for loading .fxb preset (default: 3000)
-      -i, --wait-bounce <msec>  wait msec for bouncing clip. (default: 500)
-      -u, --wait-undo <msec>    wait msec for undo bouncing clip (default: 500)
+      -w, --wait-plugin <msec>  wait msec for loading plugin (default: 7000)
+      -a, --wait-preset <msec>  wait msec for loading .fxb preset (default: 5000)
+      -i, --wait-bounce <msec>  wait msec for bouncing clip. (default: 1000)
+      -u, --wait-undo <msec>    wait msec for undo bouncing clip (default: 1000)
       -e, --tempo <BPM>         BPM for bouncing clip. (default: 120)
       -f, --freq <Hz>           sampling rate for output .ogg audio (default: 44100)
       -d, --fadeout <samples>   number of samples for fadeout (default: 110250)
@@ -110,15 +110,19 @@ module.exports = function(soundInfo) {
 
 ```
 
-## Generating Preview Audio
+## Procedure of Generating Preview Audio
 1. Close Bitwig studio application if already it's opened.
 1. Execute `bws-nks2ogg exec [options] <dir>` command on terminal.
 1. Bitwig Studio will automatically launch after command.
-1. If you see popup message "Please click first clip", Click (not launch) the clip at Track 1, Slot 1.
-1. Don't touch anything on Bitwig Studio window while program is processing.
+1. If you see popup message "Please click first clip" on Bitwig Studio, Click (not launch) the clip at Track 1, Slot 1. It's just needed to take focus of Bitwig Studio window for remote automation once at initial time. After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
+1. When processing is done, Bitwig Studio will shutdown automatically.
 
 ## Adjust Timings
 hogehoge...
+## Module Use
+The following modules are avelable for general use.
+### gulp-nksf2fxb
+### gulp-nks-wav2ogg
 
 ## Notes
 - Will support macOS, Windows and WSL. (Currently tested only macOS)
