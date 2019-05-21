@@ -9,6 +9,7 @@ const updateNotifier = require('update-notifier');
 const rimraf = require('rimraf');
 const glob = require('glob');
 const Confirm = require('prompt-confirm');
+const ffmpeg = require('fluent-ffmpeg');
 const nksf2ogg = require('../lib/bitwig-nks-preview-generator');
 const Local = require('../lib/bitwig-studio-local');
 const pkg = require('../package.json');
@@ -29,14 +30,14 @@ program
 program
   .command('exec <dir>')
   .description('Generate preview audio from .nksf preset files.')
-  .option('-b, --bitwig <path>',             descs.bitwig,      defaults.bitwig)
-  .option('-u, --url <URL>',                 descs.url,         defaults.url)
+  .option('-b, --bitwig <path>',             descs.bitwig,               defaults.bitwig)
+  .option('-u, --url <URL>',                 descs.url,                  defaults.url)
   .option('-s, --skip-error',                descs.skipError)
   .option('-k, --skip-exist',                descs.skipExist)
   .option('-h, --show-plugin',               descs.showPlugin)
-  .option('-c, --clip <path>',               descs.clip,        defaults.clip)
-  .option('-f, --fxb <path>',                descs.fxb,         defaults.fxb)
-  .option('-w, --wav <path>',                descs.wav,         defaults.wav)
+  .option('-c, --clip <path>',               descs.clip,                  defaults.clip)
+  .option('-f, --fxb <path>',                descs.fxb,                   defaults.fxb)
+  .option('-w, --wav <path>',                descs.wav,                   defaults.wav)
   .option('-t, --timeout <msec>',            descs.timeout,     parseInt, defaults.timeout)
   .option('-w, --wait-plugin <msec>',        descs.waitPlugin,  parseInt, defaults.waitPlugin)
   .option('-a, --wait-preset <msec>',        descs.waitPreset,  parseInt, defaults.waitPreset)
@@ -45,7 +46,7 @@ program
   .option('-e, --tempo <BPM>',               descs.tempo,       parseInt, defaults.tempo)
   .option('-f, --freq <Hz>',                 descs.freq,        parseInt, defaults.freq)
   .option('-d, --fadeout <samples>',         descs.fadeout,     parseInt, defaults.fadeout)
-  .option('-l, --silence <dB>',              descs.silence,     parseInt, defaults.silence)
+  .option('-l, --silence <dB>',              descs.silence,               defaults.silence)
   .option('-q, --quality <number>',          descs.quality,     parseInt, defaults.quality)
   .action(execCommand);
 
@@ -62,6 +63,7 @@ program
   .option('-r, --relative', 'list files as relative path from <dir>', false)
   .option('-m, --missing',  "list preset files that doesn't have preview", false)
   .option('-u, --useless',  "list preview files that doesn't have preset", false)
+  .option('-f, --ffprobe',  "list files as result of ffprobe", false)
   .action(listCommand);
 
 program
@@ -107,7 +109,15 @@ function listCommand(dir, options) {
     } else if (options.relative) {
       file = path.relative(dir, file);
     }
-    console.info(file);
+    if (options.ffprobe) {
+      ffmpeg(file)
+        .ffprobe(function(err, data) {
+          console.info(data);
+        })
+    } else {
+      console.info(file);
+    }
+    firstFile = false;
   });
 }
 

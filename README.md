@@ -99,7 +99,7 @@ module.exports = function(soundInfo) {
   if (soundInfo.types[0][0] === 'Bass') {
     // return absolute path or relative path from this .js file's directory.
     clip = 'Bitwig Studio Files/NKS-Preview-C1-Single.bwclip'; 
-  } else if (soundInfo.types[0][0].includes('Piano')) {
+  } else if (soundInfo.types[0][1].includes('Piano')) {
     clip = 'Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip';
   } else {
     clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip';
@@ -107,7 +107,6 @@ module.exports = function(soundInfo) {
   console.log('[custom mapper]', 'NKS Info:', soundInfo, 'CLip:', clip);
   return clip;
 };
-
 ```
 
 ## Procedure of Generating Preview Audio
@@ -120,12 +119,53 @@ module.exports = function(soundInfo) {
 ## Adjust Timings
 hogehoge...
 ## Module Use
-The following modules are avelable for general use.
+The following modules are available for general use.
 ### gulp-nksf2fxb
+#### Usage
+```js
+const gulp = require('gulp');
+const nksf2fxb = require('bitwig-nks-preview-generator').nksf2fxb;
+ 
+gulp.task('nksf2fxb', function () {
+  return gulp.src('./nksf/**/*.nksf')
+    .pipe(nksf2fxb(options))
+    .pipe(gulp.dest('./fxb'));
+});
+```
+#### Options Default
+```js
+{
+  skipError: false // skip on error, need gulp-plumber, default: false
+}
+```
+
 ### gulp-nks-wav2ogg
+#### Usage
+```js
+const gulp = require('gulp');
+const wav2ogg = require('bitwig-nks-preview-generator').wav2ogg;
+ 
+gulp.task('wav2ogg', function () {
+  return gulp.src('./wav/**/*.wav')
+    .pipe(nksf2fxb(options))
+    .pipe(gulp.dest('./ogg'));
+});
+```
+#### Options Default
+```js
+{
+  dotPreviews: true,   // append '.prevews' to dirname
+  nksfDotOgg: true,    // rename extension to '.nksf.ogg'
+  freq: 44100,         // sampling rate for output .ogg audio
+  silence: '-90dB',    // threshold level for removing silnce from end
+  fadeout: 110250,     // number of samples for fadeout
+  quality: 5,          // quality of .ogg audio. 0-10'
+  skipError: false     // skip on error, need gulp-plumber, default: false
+}
+```
 
 ## Notes
-- Will support macOS, Windows and WSL. (Currently tested only macOS)
+- Will support macOS, Windows and WSL. (Currently tested only on macOS)
 
 ## License
 [MIT](LICENSE)

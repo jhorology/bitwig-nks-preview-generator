@@ -9,7 +9,7 @@ module.exports = function(soundInfo) {
   if (soundInfo.types[0][0] === 'Bass') {
     // return absolute path or relative path from this .js file's directory.
     clip = 'Bitwig Studio Files/NKS-Preview-C1-Single.bwclip'; 
-  } else if (soundInfo.types[0][0].includes('Piano')) {
+  } else if (soundInfo.types[0][1].includes('Piano')) {
     clip = 'Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip';
   } else {
     clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip';
