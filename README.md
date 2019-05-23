@@ -130,7 +130,8 @@ module.exports = function(soundInfo) {
 1. When processing is done, Bitwig Studio will shutdown automatically.
 
 ## Adjust Timings
-hogehoge...
+There is no way to know when the plugin or preset loading is finished so far. These timings are depends on plugin and your environment. The options `--wait-plugin <msec>, --wait-preset <msec>` must be set large enough value.
+
 ## Module Use
 The following modules are available for general use.
 ### gulp-nksf2fxb

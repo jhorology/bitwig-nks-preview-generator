@@ -225,8 +225,9 @@ function execCommand(dir, options) {
         summary.stopCausedBy =  err;
         this.emit('end');
       }
-    } else {
+    } else if (file) {
       summary.completed.push(file.path);
+    } else {
     }
   }).on('end', ()=>{
     // stop progress bar.
