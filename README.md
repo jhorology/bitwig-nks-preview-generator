@@ -14,7 +14,7 @@ Publishing NPM package soon.
 ```sh
 # global install
 npm install bitwig-nks-preview-generator -g
-# install Bitwig Studio Extension
+# install WebSocket RPC server Bitwig Studio Extension
 bws-nksf2ogg install
 ```
 ## Command Options
@@ -51,15 +51,25 @@ bws-nksf2ogg install
       -f, --fxb <path>          directory for store intermediate .fxb files (default: "temp/fxb")
       -w, --wav <path>          directory for store intermediate .wav files (default: "temp/wav")
       -t, --timeout <msec>      timeout msec for launch & connect Bitwig Studio (default: 30000)
-      -w, --wait-plugin <msec>  wait msec for loading plugin (default: 7000)
-      -a, --wait-preset <msec>  wait msec for loading .fxb preset (default: 5000)
+      -a, --wait-plugin <msec>  wait msec for loading plugin (default: 7000)
+      -i, --wait-preset <msec>  wait msec for loading .fxb preset (default: 5000)
       -e, --tempo <BPM>         BPM for bouncing clip. (default: 120)
       -f, --freq <Hz>           sampling rate for output .ogg audio (default: 44100)
       -d, --fadeout <samples>   number of samples for fadeout (default: 110250)
       -l, --silence <dB>        threshold level for removing silnce from end (default: "-90dB")
       -q, --quality <number>    quality of .ogg audio. 0-10 (default: 5)
       -h, --help                output usage information
-
+  
+    $ bin/bws-nksf2ogg install --help
+    Usage: install [options]
+    
+    Install Bitwig Studio WebSockets RPC server extension.
+    
+     Options:
+      -e, --extension-dir <path>  Bitwig Studio Extension directory
+                                  (default: "<platform specific>")
+      -h, --help                  output usage information
+    
     $ bws-nksf2ogg list --help
     Usage: list [options] <dir>
     
@@ -82,14 +92,14 @@ bws-nksf2ogg install
       -y, --yes   no comfirmation
       -h, --help  output usage information
 
-## MIDI clip mapper
-Mapper .js program allows for mapping NKS sound infomation to your custom MIDI clip.
+## MIDI Clip Mapper
+The mapper .js program allows for mapping NKS sound infomation to your custom MIDI clip.
 ```sh
 bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
 ```
 An example:
 ```js
-const log = require('.').logger('custom-mapper');
+const log = require('bitwig-nks-preview-generator').logger('custom-mapper');
 /**
  * Example NKS Preview MIDI clip mapper for UVI Key Suite Digital.
  * 
@@ -111,7 +121,8 @@ module.exports = function(soundInfo) {
 };
 ```
 
-## Procedure of Generating Preview Audio
+## Procedure for Generating Preview Audio
+1. Check WebSocket RPC Server module is enabled in preferences panel of Bitwig Studio.
 1. Close Bitwig studio application if already it's opened.
 1. Execute `bws-nks2ogg exec [options] <dir>` command on terminal.
 1. Bitwig Studio will automatically launch after command.
@@ -167,6 +178,8 @@ gulp.task('wav2ogg', function () {
 ```
 
 ## Notes
+- Support only the thirdparty VST2 plugins.
+- Custom MIDI clip should contains only MIDI data.
 - Will support macOS, Windows and WSL. (Currently tested only on macOS)
 
 ## License
