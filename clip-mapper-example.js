@@ -1,3 +1,4 @@
+const log = require('.').logger('custom-mapper');
 /**
  * Example NKS Preview MIDI clip mapper for UVI Key Suite Digital.
  * 
@@ -14,6 +15,6 @@ module.exports = function(soundInfo) {
   } else {
     clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip';
   }
-  console.log('[custom mapper]', 'NKS Info:', soundInfo, 'CLip:', clip);
+  log.info('NKS Info:', soundInfo, 'CLip:', clip);
   return clip;
 };

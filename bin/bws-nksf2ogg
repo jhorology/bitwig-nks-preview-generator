@@ -1,27 +1,32 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const execSync = require('child_process').execSync;
-
-const program = require('commander');
-const updateNotifier = require('update-notifier');
-const rimraf = require('rimraf');
-const glob = require('glob');
-const Confirm = require('prompt-confirm');
-const ffmpeg = require('fluent-ffmpeg');
-const nksf2ogg = require('../lib/bitwig-nks-preview-generator');
-const Local = require('../lib/bitwig-studio-local');
-const pkg = require('../package.json');
-const notifier = updateNotifier({pkg});
+const fs = require('fs'),
+      path = require('path'),
+      execSync = require('child_process').execSync,
+      program = require('commander'),
+      updateNotifier = require('update-notifier'),
+      rimraf = require('rimraf'),
+      glob = require('glob'),
+      Confirm = require('prompt-confirm'),
+      ffmpeg = require('fluent-ffmpeg'),
+      {Bar} = require('cli-progress'),
+      chalk = require('chalk'),
+      emoji = require('node-emoji'),
+      nksf2ogg = require('../lib/bitwig-nks-preview-generator'),
+      Local = require('../lib/bitwig-studio-local'),
+      logger = require('../lib/logger'),
+      log = logger('bws-nksf2ogg'),
+      {PluginProcessingError, PluginDiscardFile} = require('../lib/gulp-plugin-wrapper'),
+      pkg = require('../package.json'),
+      notifier = updateNotifier({pkg}),
+      defaults = nksf2ogg.defaultOptions,
+      descs = nksf2ogg.optionsDescriptions;
 
 if (notifier.update && notifier.update.latest !== pkg.version) {
   notifier.notify({
     defer: false
   });
 }
-const defaults = nksf2ogg.defaultOptions;
-const descs = nksf2ogg.optionsDescriptions;
 
 program
   .description(pkg.description)
@@ -30,6 +35,7 @@ program
 program
   .command('exec <dir>')
   .description('Generate preview audio from .nksf preset files.')
+  .option('-d, --debug <level>',             'verbosity level in testing. 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio', intArg,  0)
   .option('-b, --bitwig <path>',             descs.bitwig,               defaults.bitwig)
   .option('-u, --url <URL>',                 descs.url,                  defaults.url)
   .option('-s, --skip-error',                descs.skipError)
@@ -38,16 +44,14 @@ program
   .option('-c, --clip <path>',               descs.clip,                  defaults.clip)
   .option('-f, --fxb <path>',                descs.fxb,                   defaults.fxb)
   .option('-w, --wav <path>',                descs.wav,                   defaults.wav)
-  .option('-t, --timeout <msec>',            descs.timeout,     parseInt, defaults.timeout)
-  .option('-w, --wait-plugin <msec>',        descs.waitPlugin,  parseInt, defaults.waitPlugin)
-  .option('-a, --wait-preset <msec>',        descs.waitPreset,  parseInt, defaults.waitPreset)
-  .option('-i, --wait-bounce <msec>',        descs.waitBounce,  parseInt, defaults.waitBounce)
-  .option('-u, --wait-undo <msec>',          descs.waitUndo,    parseInt, defaults.waitUndo)
-  .option('-e, --tempo <BPM>',               descs.tempo,       parseInt, defaults.tempo)
-  .option('-f, --freq <Hz>',                 descs.freq,        parseInt, defaults.freq)
-  .option('-d, --fadeout <samples>',         descs.fadeout,     parseInt, defaults.fadeout)
-  .option('-l, --silence <dB>',              descs.silence,               defaults.silence)
-  .option('-q, --quality <number>',          descs.quality,     parseInt, defaults.quality)
+  .option('-t, --timeout <msec>',            descs.timeout,     msecArg, defaults.timeout)
+  .option('-w, --wait-plugin <msec>',        descs.waitPlugin,  msecArg, defaults.waitPlugin)
+  .option('-a, --wait-preset <msec>',        descs.waitPreset,  msecArg, defaults.waitPreset)
+  .option('-e, --tempo <BPM>',               descs.tempo,       intArg,  defaults.tempo)
+  .option('-f, --freq <Hz>',                 descs.freq,        intArg,  defaults.freq)
+  .option('-d, --fadeout <samples>',         descs.fadeout,     intArg,  defaults.fadeout)
+  .option('-l, --silence <dB>',              descs.silence,              defaults.silence)
+  .option('-q, --quality <number>',          descs.quality,     intArg,  defaults.quality)
   .action(execCommand);
 
 program
@@ -73,6 +77,16 @@ program
   .action(cleanCommand);
 
 program.parse(process.argv);
+
+function msecArg(val, def) {
+  const v = parseInt(val);
+  return v;
+}
+
+function intArg(val, def) {
+  const v = parseInt(val);
+  return v;
+}
 
 /**
  * install Bitwig Studio Extension.
@@ -113,7 +127,7 @@ function listCommand(dir, options) {
       ffmpeg(file)
         .ffprobe(function(err, data) {
           console.info(data);
-        })
+        });
     } else {
       console.info(file);
     }
@@ -167,25 +181,75 @@ function execCommand(dir, options) {
     _checkJsFunction(options.clip);
   }
 
-  const files = _glob(`${dir}/**/*.nksf`,
-                      options.skipExist ? _hasNotPreview : undefined);
-
-  if (!files.length) {
+  const numFiles = _glob(`${dir}/**/*.nksf`, options.skipExist ? _hasNotPreview : undefined).length;
+  if (!numFiles) {
     console.info('Target ".nksf" files are not found.');
     return;
   }
-
-  // for debug
-  // process.on('unhandledRejection', (reason, p) => {
-  //   console.log('###### Unhandled Rejection at: Promise', p, 'reason:', reason);
-  // });
-
-  nksf2ogg(dir, options, files.length, function(err, summary) {
-    if (err) {
-      console.error(err);
-      process.exitt(1);
+  // initialize logger
+  var bar,fileCount = 0;
+  if (options.debug) {
+    logger.configure(options.debug);
+  } else {
+    // progress bar
+    bar = new Bar({
+      format: 'progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} | {file}'
+    });
+    bar.start(numFiles, fileCount);
+  }
+  // start the progress bar with a total value of 200 and start value of 0
+  
+  const summary = {
+    completed: [],
+    failed: [],
+    ignored: []
+  };
+  nksf2ogg(dir, options, function(err, file) {
+    if (bar) {
+      bar.update(++fileCount, {
+        file: (err ? '❌' : '✔️') + file ? file.relative : ''
+      });
     }
-    console.info('Execution completed successfully. resilt summary:', summary);
+    if (err) {
+      if (err instanceof PluginDiscardFile) {
+        summary.ignored.push(err.srcFile.path);
+      } else if (err instanceof PluginProcessingError) {
+        summary.failed.push({
+          file: err.file.path,
+          causedBy: err.causedBy
+        });
+        if (err.stop) {
+          summary.stopCausedBy =  err.causedBy;
+        }
+      } else {
+        summary.stopCausedBy =  err;
+        this.emit('end');
+      }
+    } else {
+      summary.completed.push(file.path);
+    }
+  }).on('end', ()=>{
+    // stop progress bar.
+    if (bar) bar.stop();
+  });
+  process.on('exit', ()=>{
+    if (summary.stopCausedBy) {
+      console.info(chalk.redBright.bold('Execution done with error:'),
+                   summary.stopCausedBy);
+      process.exit(1);
+    }
+    if (summary) {
+      const results = [];
+      results.push(chalk.greenBright(`${summary.completed.length} files suceeded`));
+      if (summary.failed.length) {
+        results.push(chalk.redBright(`${summary.failed.length} files failed`));
+      }
+      if (summary.ignored.length) {
+        results.push(chalk.yellowBright(`${summary.ignored.length} files ignored`));
+      }
+      console.info(chalk.greenBright.bold('Execution completed with result:'),
+                   results.join(', ') + '.');
+    }
   });
 }
 
@@ -225,8 +289,8 @@ function _checkJsFunction(file) {
   }
 }
 
-function _glob(pattern, filter) {
-  let files = glob.sync(pattern);
+function _glob(pattern, filter, options = {}) {
+  let files = glob.sync(pattern, options);
   if (filter) {
     files = files.filter((f) =>{
       return filter(f);

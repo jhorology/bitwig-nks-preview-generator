@@ -51,8 +51,6 @@ bws-nksf2ogg install
       -t, --timeout <msec>      timeout msec for launch & connect Bitwig Studio (default: 30000)
       -w, --wait-plugin <msec>  wait msec for loading plugin (default: 7000)
       -a, --wait-preset <msec>  wait msec for loading .fxb preset (default: 5000)
-      -i, --wait-bounce <msec>  wait msec for bouncing clip. (default: 1000)
-      -u, --wait-undo <msec>    wait msec for undo bouncing clip (default: 1000)
       -e, --tempo <BPM>         BPM for bouncing clip. (default: 120)
       -f, --freq <Hz>           sampling rate for output .ogg audio (default: 44100)
       -d, --fadeout <samples>   number of samples for fadeout (default: 110250)
