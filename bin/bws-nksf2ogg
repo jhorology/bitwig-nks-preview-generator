@@ -35,7 +35,7 @@ program
 program
   .command('exec <dir>')
   .description('Generate preview audio from .nksf preset files.')
-  .option('-d, --debug <level>',             'verbosity level in testing. 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio', intArg,  0)
+  .option('-d, --debug <level>',             'console verbosity level in testing, 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio', intArg,  0)
   .option('-b, --bitwig <path>',             descs.bitwig,               defaults.bitwig)
   .option('-u, --url <URL>',                 descs.url,                  defaults.url)
   .option('-s, --skip-error',                descs.skipError)

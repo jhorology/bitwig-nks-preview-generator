@@ -39,6 +39,8 @@ bws-nksf2ogg install
     Generate preview audio from .nksf preset files.
 
     Options:
+      -d, --debug <level>       console verbosity level in testing,
+                                0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio (default: 0)
       -b, --bitwig <path>       Bitwig Studio execution file path (default: "<platform specific>")
       -u, --url <URL>           Bitwig Studio WebSockets URL (default: "ws://localhost:8887")
       -s, --skip-error          skip on error, continue processing
@@ -87,6 +89,7 @@ bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
 ```
 An example:
 ```js
+const log = require('.').logger('custom-mapper');
 /**
  * Example NKS Preview MIDI clip mapper for UVI Key Suite Digital.
  * 
@@ -103,7 +106,7 @@ module.exports = function(soundInfo) {
   } else {
     clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip';
   }
-  console.log('[custom mapper]', 'NKS Info:', soundInfo, 'CLip:', clip);
+  log.info('NKS Info:', soundInfo, 'CLip:', clip);
   return clip;
 };
 ```
@@ -146,7 +149,7 @@ const wav2ogg = require('bitwig-nks-preview-generator').wav2ogg;
  
 gulp.task('wav2ogg', function () {
   return gulp.src('./wav/**/*.wav')
-    .pipe(nksf2fxb(options))
+    .pipe(wav2ogg(options))
     .pipe(gulp.dest('./ogg'));
 });
 ```
