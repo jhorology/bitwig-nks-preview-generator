@@ -1,3 +1,5 @@
+*.wav
+*.fxb
 .DS_Store
 *~
 .\#*
@@ -26,6 +28,3 @@ coverage
 .previews/
 npm-debug.log
 yarn-error.log
-package-lock.json
-/nbproject/private/
-WebSocketRpcServer.bwextension

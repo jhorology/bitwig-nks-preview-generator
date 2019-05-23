@@ -34,7 +34,7 @@ program
 
 program
   .command('exec <dir>')
-  .description('Generate preview audio from .nksf preset files.')
+  .description('Generate preview audio from .nksf preset files recursively.')
   .option('-d, --debug <level>',             'console verbosity level in testing, 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio', intArg,  0)
   .option('-b, --bitwig <path>',             descs.bitwig,               defaults.bitwig)
   .option('-u, --url <URL>',                 descs.url,                  defaults.url)
@@ -62,7 +62,7 @@ program
 
 program
   .command('list <dir>')
-  .description('List .nksf or .nksf.ogg files.')
+  .description('List .nksf or .nksf.ogg files recursively.')
   .option('-a, --absolute', 'list files as absolute path', false)
   .option('-r, --relative', 'list files as relative path from <dir>', false)
   .option('-m, --missing',  "list preset files that doesn't have preview", false)
@@ -72,7 +72,7 @@ program
 
 program
   .command('clean <dir>')
-  .description('Delete .previews folders.')
+  .description('Delete .previews folders recursively.')
   .option('-y, --yes', 'no comfirmation', false)
   .action(cleanCommand);
 

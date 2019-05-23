@@ -31,7 +31,7 @@ bws-nksf2ogg install
       exec [options] <dir>   Generate preview audio from .nksf preset files.
       install [options]      Install Bitwig Studio WebSockets RPC server extension.
       list [options] <dir>   List .nksf or .nksf.ogg files.
-      clean [options] <dir>  Delete .previews folders.
+      clean [options] <dir>  Delete .previews folders recursively.
     
     $ bws-nksf2ogg exec --help
     Usage: exec [options] <dir>
@@ -73,7 +73,7 @@ bws-nksf2ogg install
     $ bws-nksf2ogg list --help
     Usage: list [options] <dir>
     
-    List .nksf or .nksf.ogg files.
+    List .nksf or .nksf.ogg files recursively.
 
     Options:
       -a, --absolute  list files as absolute path
@@ -86,7 +86,7 @@ bws-nksf2ogg install
     $ bws-nksf2ogg clean --help
     Usage: clean [options] <dir>
     
-    Delete .previews folders.
+    Delete .previews folders recursively.
     
     Options:
       -y, --yes   no comfirmation
@@ -120,17 +120,69 @@ module.exports = function(soundInfo) {
   return clip;
 };
 ```
+- Custom MIDI clip should contains only MIDI data.
 
 ## Procedure for Generating Preview Audio
-1. Check WebSocket RPC Server module is enabled in preferences panel of Bitwig Studio.
+1. Check WebSocket RPC Server module is enabled in controller preferences panel of Bitwig Studio.
 1. Close Bitwig studio application if already it's opened.
 1. Execute `bws-nks2ogg exec [options] <dir>` command on terminal.
 1. Bitwig Studio will automatically launch after command.
 1. If you see popup message "Please click first clip" on Bitwig Studio, Click (not launch) the clip at Track 1, Slot 1. It's just needed to take focus of Bitwig Studio window for remote automation once at initial time. After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
 1. When processing is done, Bitwig Studio will shutdown automatically.
 
+### Execution Example
+```
+$ tree -a
+
+<current working directory>
+└── nksf
+    ├── Repro-1
+    │   ├── 01\ Solo\ Trumpet.nksf
+    │   └── 02\ Frequency\ Modulation\ Bells.nksf
+    └── Serum
+        ├── PL\ Beepy\ ting\ [GI].nksf
+        └── PL\ Big\ Bells\ [AS].nksf
+
+$ bws-nksf2ogg exec --wav temp/wav --fxb temp/fxb nksf
+
+progress [========================================] 100% | ETA: 0s | 4/4 | PL Big Bells [AS].nksf.ogg
+Execution completed with result: 4 files suceeded.
+
+$ tree -a
+
+<current working directory>
+├── nksf
+│   ├── Repro-1
+│   │   ├── .previews
+│   │   │   ├── 01\ Solo\ Trumpet.nksf.ogg
+│   │   │   └── 02\ Frequency\ Modulation\ Bells.nksf.ogg
+│   │   ├── 01\ Solo\ Trumpet.nksf
+│   │   └── 02\ Frequency\ Modulation\ Bells.nksf
+│   └── Serum
+│       ├── .previews
+│       │   ├── PL\ Beepy\ ting\ [GI].nksf.ogg
+│       │   └── PL\ Big\ Bells\ [AS].nksf.ogg
+│       ├── PL\ Beepy\ ting\ [GI].nksf
+│       └── PL\ Big\ Bells\ [AS].nksf
+└── temp
+    ├── fxb
+    │   ├── Repro-1
+    │   │   ├── 01\ Solo\ Trumpet.fxb
+    │   │   └── 02\ Frequency\ Modulation\ Bells.fxb
+    │   └── Serum
+    │       ├── PL\ Beepy\ ting\ [GI].fxb
+    │       └── PL\ Big\ Bells\ [AS].fxb
+    └── wav
+        ├── Repro-1
+        │   ├── 01\ Solo\ Trumpet.wav
+        │   └── 02\ Frequency\ Modulation\ Bells.wav
+        └── Serum
+            ├── PL\ Beepy\ ting\ [GI].wav
+            └── PL\ Big\ Bells\ [AS].wav
+```
+
 ## Adjust Timings
-There is no way to know when the plugin or preset loading is finished so far. These timings are depends on plugin and your environment. The options `--wait-plugin <msec>, --wait-preset <msec>` must be set large enough value.
+There is no way to know via remote automaition when the plugin or preset loading is finished so far. These timings are depends on plugin and your environment. The options `--wait-plugin <msec>, --wait-preset <msec>` must be set large enough value.
 
 ## Module Use
 The following modules are available for general use.
@@ -180,7 +232,6 @@ gulp.task('wav2ogg', function () {
 
 ## Notes
 - Support only the thirdparty VST2 plugins.
-- Custom MIDI clip should contains only MIDI data.
 - Will support macOS, Windows and WSL. (Currently tested only on macOS)
 
 ## License
