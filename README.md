@@ -19,7 +19,8 @@ bws-nksf2ogg install
 ```
 Local Install
 ```sh
-cd my-work-folder
+mkdir my-nks-preview-project
+cd my-nks-preview-project
 npm init
 npm install bitwig-nks-preview-generator --save-dev
 # install WebSocket RPC server Bitwig Studio Extension
@@ -46,7 +47,7 @@ npx bws-nksf2ogg install
     $ bws-nksf2ogg exec --help
     Usage: exec [options] <dir>
     
-    Generate preview audio from .nksf preset files.
+    Generate preview audio from .nksf preset files recursively.
 
     Options:
       -d, --debug <level>       console verbosity level in testing,
@@ -107,7 +108,7 @@ The mapper .js program allows for mapping NKS sound infomation to your custom MI
 ```sh
 bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
 ```
-An example:
+[An example](clip-mapper-example.js):
 ```js
 // use logger to follow --debug option
 const log = require('bitwig-nks-preview-generator').logger('custom-mapper');
@@ -127,7 +128,7 @@ module.exports = function(soundInfo) {
   } else {
     clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip';
   }
-  log.info('NKS Info:', soundInfo, 'CLip:', clip);
+  log.info('NKS Info:', soundInfo, 'Clip:', clip);
   return clip;
 };
 ```
@@ -203,7 +204,7 @@ The following modules are available for general use.
 const gulp = require('gulp');
 const nksf2fxb = require('bitwig-nks-preview-generator').nksf2fxb;
  
-gulp.task('nksf2fxb', function () {
+gulp.task('nksf2fxb', function() {
   return gulp.src('./nksf/**/*.nksf')
     .pipe(nksf2fxb(options))
     .pipe(gulp.dest('./fxb'));
@@ -222,7 +223,7 @@ gulp.task('nksf2fxb', function () {
 const gulp = require('gulp');
 const wav2ogg = require('bitwig-nks-preview-generator').wav2ogg;
  
-gulp.task('wav2ogg', function () {
+gulp.task('wav2ogg', function() {
   return gulp.src('./wav/**/*.wav')
     .pipe(wav2ogg(options))
     .pipe(gulp.dest('./ogg'));
@@ -246,7 +247,7 @@ gulp.task('wav2ogg', function () {
   - UVIWorkStation
   - Serum
   - Spire
-  - Repro-1     (even work if it's vendor's .nksf)
+  - Repro-1     (even work if it's vendor's official .nksf)
 - Will support macOS, Windows and WSL. (Currently only tested on macOS)
 
 ## License
