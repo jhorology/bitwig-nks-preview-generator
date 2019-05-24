@@ -11,12 +11,22 @@ Publishing NPM package soon.
 
 
 ## Installation
+Global Install
 ```sh
-# global install
 npm install bitwig-nks-preview-generator -g
 # install WebSocket RPC server Bitwig Studio Extension
 bws-nksf2ogg install
 ```
+Local Innstall
+```sh
+cd my-work-folder
+npm init
+npm install bitwig-nks-preview-generator --save-dev
+# install WebSocket RPC server Bitwig Studio Extension
+npx bws-nksf2ogg install
+```
+
+
 ## Command Options
     $ bws-nksf2ogg --help
     Usage: bws-nksf2ogg [options] [command]
@@ -60,7 +70,7 @@ bws-nksf2ogg install
       -q, --quality <number>    quality of .ogg audio. 0-10 (default: 5)
       -h, --help                output usage information
   
-    $ bin/bws-nksf2ogg install --help
+    $ bws-nksf2ogg install --help
     Usage: install [options]
     
     Install Bitwig Studio WebSockets RPC server extension.
@@ -99,6 +109,7 @@ bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
 ```
 An example:
 ```js
+// use logger to follow --debug option
 const log = require('bitwig-nks-preview-generator').logger('custom-mapper');
 /**
  * Example NKS Preview MIDI clip mapper for UVI Key Suite Digital.
@@ -125,7 +136,7 @@ module.exports = function(soundInfo) {
 ## Procedure for Generating Preview Audio
 1. Check WebSocket RPC Server module is enabled in controller preferences panel of Bitwig Studio.
 1. Close Bitwig studio application if already it's opened.
-1. Execute `bws-nks2ogg exec [options] <dir>` command on terminal.
+1. Execute `bws-nksf2ogg exec [options] <dir>` command on terminal.
 1. Bitwig Studio will automatically launch after command.
 1. If you see popup message "Please click first clip" on Bitwig Studio, Click (not launch) the clip at Track 1, Slot 1. It's just needed to take focus of Bitwig Studio window for remote automation once at initial time. After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
 1. When processing is done, Bitwig Studio will shutdown automatically.
@@ -231,7 +242,11 @@ gulp.task('wav2ogg', function () {
 ```
 
 ## Notes
-- Support only the thirdparty VST2 plugins.
+- Only support for the third party VST2 plugins. Currently confirmed plugins:
+  - UVIWorkStation
+  - Serum
+  - Spire
+  - Repro-1     (even work if it's vendor's .nksf)
 - Will support macOS, Windows and WSL. (Currently tested only on macOS)
 
 ## License
