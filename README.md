@@ -17,7 +17,7 @@ npm install bitwig-nks-preview-generator -g
 # install WebSocket RPC server Bitwig Studio Extension
 bws-nksf2ogg install
 ```
-Local Innstall
+Local Install
 ```sh
 cd my-work-folder
 npm init
@@ -247,7 +247,7 @@ gulp.task('wav2ogg', function () {
   - Serum
   - Spire
   - Repro-1     (even work if it's vendor's .nksf)
-- Will support macOS, Windows and WSL. (Currently tested only on macOS)
+- Will support macOS, Windows and WSL. (Currently only tested on macOS)
 
 ## License
 [MIT](LICENSE)
