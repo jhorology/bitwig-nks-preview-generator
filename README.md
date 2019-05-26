@@ -7,7 +7,7 @@ Publishing NPM package soon.
 
 - Bitwig Studio version 2.5.1 or above.
 - ffmpeg version 4.1.3 or above.
-- node.js v8 or above.
+- node.js v10 or above.
 
 
 ## Installation
@@ -58,7 +58,7 @@ npx bws-nksf2ogg install
       -k, --skip-exist          skip .nksf file that already has preview audio
       -h, --show-plugin         show plugin window
       -c, --clip <path>         .bwclip MIDP clip or .js mapper program
-                                (default: "<package>/Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip")
+                                (default: "<package>/Bitwig Studio Files/NKS-Preview-C2-Single.bwclip")
       -f, --fxb <path>          directory for store intermediate .fxb files (default: "temp/fxb")
       -w, --wav <path>          directory for store intermediate .wav files (default: "temp/wav")
       -t, --timeout <msec>      timeout msec for launch & connect Bitwig Studio (default: 30000)
@@ -132,7 +132,7 @@ module.exports = function(soundInfo) {
   return clip;
 };
 ```
-- Custom MIDI clip should contains only MIDI data.
+- Custom MIDI clip should contains only MIDI data. When edit and save it on Bitwig Studio, don't forget to delete device.
 
 ## Procedure for Generating Preview Audio
 1. Check WebSocket RPC Server module is enabled in controller preferences panel of Bitwig Studio.

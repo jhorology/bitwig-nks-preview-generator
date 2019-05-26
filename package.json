@@ -2,6 +2,10 @@
   "name": "bitwig-nks-preview-generator",
   "version": "0.1.0-SNAPSHOT",
   "description": "Streaming convert NKSF files to preview audio with using Bitwig Studio.",
+  "engines": {
+    "node": ">=10"
+  },
+  "engineStrict": true,
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

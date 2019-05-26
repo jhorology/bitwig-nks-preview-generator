@@ -161,6 +161,16 @@ function cleanCommand(dir, options) {
   });
 }
 
+
+/**
+ * exec command result summary.
+ */
+const summary = {
+  completed: [],
+  failed: [],
+  ignored: []
+};
+
 /**
  * Generate preview audio from preset files
  * @param {String} dir
@@ -187,71 +197,89 @@ function execCommand(dir, options) {
     return;
   }
   // initialize logger
-  var bar,fileCount = 0;
+  var bar;
   if (options.debug) {
     logger.configure(options.debug);
   } else {
     // progress bar
     bar = new Bar({
-      format: 'progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} | {file}'
+      format: 'progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} | {message}'
     });
-    bar.start(numFiles, fileCount);
+    bar.start(numFiles, 0, {
+      message: 'waiting for start progress'
+    });
   }
   // start the progress bar with a total value of 200 and start value of 0
   
-  const summary = {
-    completed: [],
-    failed: [],
-    ignored: []
-  };
   nksf2ogg(dir, options, function(err, file) {
-    if (bar) {
-      bar.update(++fileCount, {
-        file: (err ? '❌' : '✔️') + file ? file.relative : ''
+    const message = _execHandleProgress(err, file);
+    if (bar && message) {
+      bar.update(summary.completed.length + summary.failed.length, {
+        message: (err ? '❗️' : '✅️') + ' | ' + message
       });
-    }
-    if (err) {
-      if (err instanceof PluginDiscardFile) {
-        summary.ignored.push(err.srcFile.path);
-      } else if (err instanceof PluginProcessingError) {
-        summary.failed.push({
-          file: err.file.path,
-          causedBy: err.causedBy
-        });
-        if (err.stop) {
-          summary.stopCausedBy =  err.causedBy;
-        }
-      } else {
-        summary.stopCausedBy =  err;
-        this.emit('end');
-      }
-    } else if (file) {
-      summary.completed.push(file.path);
-    } else {
     }
   }).on('end', ()=>{
     // stop progress bar.
     if (bar) bar.stop();
   });
-  process.on('exit', ()=>{
-    if (summary.stopCausedBy) {
-      console.info(chalk.redBright.bold('Execution done with error:'),
-                   summary.stopCausedBy);
-      process.exit(1);
-    }
-    if (summary) {
-      const results = [];
-      results.push(chalk.greenBright(`${summary.completed.length} files suceeded`));
-      if (summary.failed.length) {
-        results.push(chalk.redBright(`${summary.failed.length} files failed`));
-      }
-      if (summary.ignored.length) {
-        results.push(chalk.yellowBright(`${summary.ignored.length} files ignored`));
-      }
-      console.info(chalk.greenBright.bold('Execution completed with result:'),
-                   results.join(', ') + '.');
+  process.on('exit', (code) => {
+    if (!code) {
+      _execReportSummary(summary);
     }
   });
+}
+
+function _execHandleProgress(err, file) {
+  var progressMessage;
+  if (file) {
+    progressMessage = file.basename;
+  } else if (err && err instanceof PluginDiscardFile) {
+    progressMessage = null;
+  } else if (err && err instanceof PluginProcessingError) {
+    progressMessage = path.basename(err.file);
+  } else {
+    progressMessage = ''
+  }
+  if (err) {
+    if (err instanceof PluginDiscardFile) {
+      summary.ignored.push(err.srcFile.path);
+    } else if (err instanceof PluginProcessingError) {
+      summary.failed.push({
+        file: err.file.path,
+        causedBy: err
+      });
+      if (err.stop) {
+        summary.stopCausedBy =  err;
+      }
+    } else {
+      summary.stopCausedBy = err;
+      console.info("##### this:", this);
+      this.emit('end');
+    }
+  } else if (file) {
+    summary.completed.push(file.path);
+  }
+  return progressMessage;
+}
+
+function _execReportSummary(summary) {
+  if (summary.stopCausedBy) {
+    console.info(chalk.redBright.bold('Execution done with error:'),
+                 summary.stopCausedBy);
+    process.exit(1);
+  }
+  if (summary) {
+    const results = [];
+    results.push(chalk.greenBright(`${summary.completed.length} files succeeded`));
+    if (summary.failed.length) {
+      results.push(chalk.redBright(`${summary.failed.length} files failed`));
+    }
+    if (summary.ignored.length) {
+      results.push(chalk.yellowBright(`${summary.ignored.length} files ignored`));
+    }
+    console.info(chalk.greenBright.bold('Execution completed with result:'),
+                 results.join(', ') + '.');
+  }
 }
 
 function _checkDir(dir) {
