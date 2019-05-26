@@ -5,7 +5,7 @@ Publishing NPM package soon.
 
 ## Requirements
 
-- Bitwig Studio version 2.5.1 or above.
+- Bitwig Studio version 2.5.1
 - ffmpeg version 4.1.3 or above.
 - node.js v10 or above.
 
