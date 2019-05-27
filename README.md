@@ -52,6 +52,7 @@ npx bws-nksf2ogg install
     Options:
       -d, --debug <level>       console verbosity level in testing,
                                 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio (default: 0)
+      -r, --dry-run             just check mapper function, generating process is not executed
       -b, --bitwig <path>       Bitwig Studio execution file path (default: "<platform specific>")
       -u, --url <URL>           Bitwig Studio WebSockets URL (default: "ws://localhost:8887")
       -s, --skip-error          skip on error, continue processing
