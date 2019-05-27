@@ -3,6 +3,7 @@
 const fs = require('fs'),
       path = require('path'),
       execSync = require('child_process').execSync,
+      readline = require('readline'),
       program = require('commander'),
       updateNotifier = require('update-notifier'),
       rimraf = require('rimraf'),
@@ -74,7 +75,8 @@ program
 program
   .command('clean <dir>')
   .description('Delete .previews folders recursively.')
-  .option('-y, --yes', 'no comfirmation', false)
+  .option('-y, --yes',       'no comfirmation', false)
+  .option('-c, --corrupted', 'find coruppted .nksf.ogg files and clean them', false)
   .action(cleanCommand);
 
 program.parse(process.argv);
@@ -148,7 +150,67 @@ function listCommand(dir, options) {
  */
 function cleanCommand(dir, options) {
   _checkDir(dir);
-  const folders = _glob(`${dir}/**/.previews/`);
+  if (options.corrupted) {
+    _cleanCorruptedFiles(dir, options);
+  } else {
+    _cleanPreviews(dir, options);
+  }
+}
+
+function _cleanCorruptedFiles(dir, options) {
+  const files = _glob(`${dir}/**/.previews/*.nksf.ogg`);
+  if (!files.length) {
+    console.info('".nksf.ogg" files are not found.');
+    return;
+  }
+  // var rl = readline.createInterface({
+  //   input: process.stdin,
+  //   output: process.stdout
+  // });
+
+
+  const corruptedFiles = [];
+  var fileCount = 0;
+  (async() => {
+    for(let file of files) {
+      const rf = path.relative(dir, file);
+      try {
+        readline.clearLine(process.stdout, 0);
+        readline.cursorTo(process.stdout, 0);
+ //       readline.cursorTo(process.stdout);
+        process.stdout.write(chalk.greenBright(`checking.. | ${++fileCount}/${files.length} | `));
+        process.stdout.write(rf);
+        await _detectCorrupted(file);
+      } catch (err) {
+        corruptedFiles.push(file);
+        readline.clearLine(process.stdout, 0);
+        readline.cursorTo(process.stdout, 0);
+        process.stdout.write(chalk.redBright(err.message));
+        //        process.stdout.write('\n');
+      }
+    }
+    process.stdout.write('\n');
+    if (!corruptedFiles.length) {
+      console.info(chalk.greenBright('All files are seems to be OK.'));
+      return;
+    }
+    if (options.yes) {
+      corruptedFiles.forEach((f)=>rimraf.sync(f));
+      return;
+    }
+    new Confirm(
+      `Founded ${corruptedFiles.length} corruppted files. ` +
+        'Are you sure to delete all these files ?'
+    ).ask(ans => {
+      if (ans) {
+        corruptedFiles.forEach((f)=>rimraf.sync(f));
+      }
+    });
+  })();
+}
+
+function _cleanPreviews(dir, options) {
+  const folders = _glob(`${dir}/**/.previews`);
   if (!folders.length) {
     console.info('".previews" folders are not found.');
     return;
@@ -167,6 +229,21 @@ function cleanCommand(dir, options) {
   });
 }
 
+function _detectCorrupted(file) {
+  return new Promise((resolve, reject) => {
+    const cmd = ffmpeg(file)
+          // .audioFilter('silencedetect=n=-90dB:d=1')
+          .format('wav')
+          .on('error', function(err) {
+            reject(err);
+          })
+          .on('end', function() {
+            resolve();
+          });
+    var ffstream = cmd.pipe();
+    ffstream.on('data', function(chunk) {});
+  });
+}
 
 /**
  * exec command result summary.
@@ -244,7 +321,7 @@ function _execHandleProgress(err, file) {
   } else if (err && err instanceof PluginProcessingError) {
     progressMessage = path.basename(err.file);
   } else {
-    progressMessage = ''
+    progressMessage = '';
   }
   if (err) {
     if (err instanceof PluginDiscardFile) {
@@ -259,7 +336,6 @@ function _execHandleProgress(err, file) {
       }
     } else {
       summary.stopCausedBy = err;
-      console.info("##### this:", this);
       this.emit('end');
     }
   } else if (file) {

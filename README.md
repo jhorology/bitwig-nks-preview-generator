@@ -101,8 +101,9 @@ npx bws-nksf2ogg install
     Delete .previews folders recursively.
     
     Options:
-      -y, --yes   no comfirmation
-      -h, --help  output usage information
+      -y, --yes        no comfirmation
+      -c, --corrupted  find coruppted .nksf.ogg files and clean them
+      -h, --help       output usage information
 
 ## MIDI Clip Mapper
 The mapper .js program allows for mapping NKS sound infomation to your custom MIDI clip.
