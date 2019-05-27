@@ -45,5 +45,8 @@
     "through2": "^3.0.1",
     "time-stamp": "^2.2.0",
     "update-notifier": "^3.0.0"
+  },
+  "devDependencies": {
+    "mkdirp": "^0.5.1"
   }
 }

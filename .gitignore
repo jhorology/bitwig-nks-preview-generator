@@ -28,3 +28,4 @@ coverage
 .previews/
 npm-debug.log
 yarn-error.log
+/test/out/
