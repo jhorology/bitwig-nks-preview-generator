@@ -15,6 +15,6 @@ module.exports = function(soundInfo) {
   } else {
     clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip';
   }
-  log.info('NKS Info:', soundInfo, 'CLip:', clip);
+  log.info('NKS Info:', soundInfo, 'Clip:', clip);
   return clip;
 };

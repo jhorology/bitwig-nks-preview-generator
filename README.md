@@ -66,7 +66,7 @@ npx bws-nksf2ogg install
       -i, --wait-preset <msec>  wait msec for loading .fxb preset (default: 5000)
       -e, --tempo <BPM>         BPM for bouncing clip. (default: 120)
       -f, --freq <Hz>           sampling rate for output .ogg audio (default: 44100)
-      -d, --fadeout <samples>   number of samples for fadeout (default: 110250)
+      -d, --fadeout <sec>       fadeout duration seconds from end (default: 0.25)
       -l, --silence <dB>        threshold level for removing silnce from end (default: "-90dB")
       -q, --quality <number>    quality of .ogg audio. 0-10 (default: 5)
       -h, --help                output usage information
@@ -133,6 +133,7 @@ module.exports = function(soundInfo) {
 };
 ```
 - Custom MIDI clip should contains only MIDI data. When edit and save it on Bitwig Studio, don't forget to delete device.
+- Support [async function](test/test-async-mapper.js).
 
 ## Procedure for Generating Preview Audio
 1. Check WebSocket RPC Server module is enabled in controller preferences panel of Bitwig Studio.
