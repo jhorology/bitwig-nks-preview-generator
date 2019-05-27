@@ -136,6 +136,7 @@ module.exports = function(soundInfo) {
 ```
 - Custom MIDI clip should contains only MIDI data. When edit and save it on Bitwig Studio, don't forget to delete device.
 - Support [async function](test/test-async-mapper.js).
+- Support [CoffeeScript](clip-mapper-example.coffee).
 
 ## Procedure for Generating Preview Audio
 1. Check WebSocket RPC Server module is enabled in controller preferences panel of Bitwig Studio.
