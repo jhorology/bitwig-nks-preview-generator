@@ -1,49 +1,37 @@
 const fs = require('fs'),
       path = require('path'),
-      ffmpeg = require('fluent-ffmpeg'),
       streamBuffers = require('stream-buffers'),
-      mkdirp = require('mkdirp');
-      wavUtil = require('./../lib/wav-util');
+      mkdirp = require('mkdirp'),
+      wavUtil = require('./../lib/wav-util'),
+      _ffmpeg = require('./../lib/gulp-nks-wav2ogg')._ffmpeg;
 
 const tests =  [
   {
     name: 'afade-src-44.1khz',
     src: 'wav/24bit-44.1kHz-1s.wav',
     conds: [
-      {freq: 44100, fadeout: 0,    silence: '-90dB', quality: 5},
-      {freq: 44100, fadeout: 0.25, silence: '-90dB', quality: 5},
-      {freq: 44100, fadeout: 0.5,  silence: '-90dB', quality: 5},
-      {freq: 44100, fadeout: 1,    silence: '-90dB', quality: 5}
+      {fadeout: 0,    silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 0.5,  silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 1,    silence: '-90dB', freq: 44100, quality: 5}
     ]
-  },
-  {
-    name: 'afade-src-96khz',
-    src: 'wav/24bit-96kHz-1s.wav',
-    conds: [
-      {freq: 44100, fadeout: 0,    silence: '-90dB', quality: 5},
-      {freq: 44100, fadeout: 0.25, silence: '-90dB', quality: 5},
-      {freq: 44100, fadeout: 0.5,  silence: '-90dB', quality: 5},
-      {freq: 44100, fadeout: 1,    silence: '-90dB', quality: 5}
-    ]
-  },
-  {
-    name: 'silenceremove-src-44.1khz',
+  }, {
+    name: 'afade-src-44.1khz',
     src: 'wav/24bit-44.1kHz-0.5s-fade-0.25s-silence-0.25s.wav',
     conds: [
-      {freq: 44100, fadeout: 0, silence: '0', quality: 5},
-      {freq: 44100, fadeout: 0.250, silence: '0', quality: 5},
-      {freq: 44100, fadeout: 0.5, silence: '0', quality: 5},
-      {freq: 44100, fadeout: 1, silence: '0', quality: 5}
+      {fadeout: 0,    silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 0.5,  silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 1,    silence: '-90dB', freq: 44100, quality: 5}
     ]
-  },
-  {
-    name: 'silenceremove-src-96khz',
-    src: 'wav/24bit-44.1kHz-0.5s-fade-0.25s-silence-0.25s.wav',
+  }, {
+    name: 'afade-src-44.1khz',
+    src: 'wav/Acidity.wav',
     conds: [
-      {freq: 44100, fadeout: 0, silence: '0',      quality: 5},
-      {freq: 44100, fadeout: 0, silence: '-100dB', quality: 5},
-      {freq: 44100, fadeout: 0, silence: '-90dB',  quality: 5},
-      {freq: 44100, fadeout: 0, silence: '-50dB',  quality: 5}
+      {fadeout: 0,    silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 0.5,  silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 1,    silence: '-90dB', freq: 44100, quality: 5}
     ]
   }];
 
@@ -60,35 +48,12 @@ const tests =  [
 })();
 
 async function wav2ogg(test, file, opts) {
-  const basename = path.basename(file, '.wav');
-  const buffer = await _wav2ogg(file, opts);
-  const outFile = `src[${basename}]-freq[${opts.freq}]-silence[${opts.silence}]-fadeout[${opts.fadeout}s]-quality[${opts.quality}].ogg`;
-  const dest = path.join('out', test);
+  const basename = path.basename(file, '.wav'),
+        fmt = await wavUtil.readFormat(file),
+        duration = fmt.dataSize / fmt.byteRate,
+        buffer = await _ffmpeg(file, duration, opts),
+        outFile = `src[${basename}]-fadeout[${opts.fadeout}s]-freq[${opts.freq}]-quality[${opts.quality}].ogg`,
+        dest = path.join('out', test);
   mkdirp.sync(dest);
   fs.writeFileSync(path.join(dest, outFile), buffer);
-}
-function _wav2ogg(file, opts) {
-  return new Promise(async (resolve, reject) => {
-    const outStream = new streamBuffers.WritableStreamBuffer(),
-          fmt = await wavUtil.readFormat(file),
-          duration = fmt.dataSize / fmt.byteRate,
-          fadeStart = duration - opts.fadeout;
-    ffmpeg(file)
-    // type st=start, d=fade duration
-      .audioFilter(`afade=t=out:st=${fadeStart}:d=${opts.fadeout}`)
-    // remove silce from end
-      // .audioFilter(`silenceremove=stop_periods=1:stop_duration=0.0001:stop_threshold=${opts.silence}`)
-      .audioCodec('libvorbis')
-      .format('ogg')
-      .audioFrequency(opts.freq)
-    // quality 0 - 10 = 64kbps - 500kbps
-      .audioQuality(opts.quality)
-      .on('error', function(err) {
-        reject(err);
-      })
-      .on('end', function() {
-        resolve(outStream.getContents());
-      })
-      .pipe(outStream, {end: true});
-  });
 }
