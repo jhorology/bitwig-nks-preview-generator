@@ -12,7 +12,6 @@ const fs = require('fs'),
       ffmpeg = require('fluent-ffmpeg'),
       {Bar} = require('cli-progress'),
       chalk = require('chalk'),
-      emoji = require('node-emoji'),
       nksf2ogg = require('../lib/bitwig-nks-preview-generator'),
       Local = require('../lib/bitwig-studio-local'),
       logger = require('../lib/logger'),
@@ -22,6 +21,7 @@ const fs = require('fs'),
       notifier = updateNotifier({pkg}),
       defaults = nksf2ogg.defaultOptions,
       descs = nksf2ogg.optionsDescriptions;
+require('coffeescript/register');
 
 if (notifier.update && notifier.update.latest !== pkg.version) {
   notifier.notify({
@@ -76,7 +76,7 @@ program
   .command('clean <dir>')
   .description('Delete .previews folders recursively.')
   .option('-y, --yes',       'no comfirmation', false)
-  .option('-c, --corrupted', 'find coruppted .nksf.ogg files and clean them', false)
+  .option('-c, --corrupted', 'find corrupted .nksf.ogg files and clean them', false)
   .action(cleanCommand);
 
 program.parse(process.argv);
@@ -265,12 +265,12 @@ function execCommand(dir, options) {
   _checkFile(options.clip);
 
   const clipExt = path.extname(options.clip);
-  if (clipExt !== '.bwclip' && clipExt !== '.js') {
+  if (!['.bwclip', '.js', '.coffee'].includes(clipExt)) {
     console.error('error: unsupported --clip <path> option.');
     process.exit(1);
   }
 
-  if (clipExt === '.js') {
+  if (clipExt === '.js' || clipExt === '.coffee') {
     _checkJsFunction(options.clip);
   }
 

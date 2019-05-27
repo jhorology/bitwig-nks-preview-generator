@@ -102,7 +102,7 @@ npx bws-nksf2ogg install
     
     Options:
       -y, --yes        no comfirmation
-      -c, --corrupted  find coruppted .nksf.ogg files and clean them
+      -c, --corrupted  find corrupted .nksf.ogg files and clean them
       -h, --help       output usage information
 
 ## MIDI Clip Mapper
@@ -158,10 +158,10 @@ $ tree -a
         ├── PL\ Beepy\ ting\ [GI].nksf
         └── PL\ Big\ Bells\ [AS].nksf
 
-$ bws-nksf2ogg exec --wav temp/wav --fxb temp/fxb nksf
+$ bws-nksf2ogg exec nksf
 
 progress [========================================] 100% | ETA: 0s | 4/4 | PL Big Bells [AS].nksf.ogg
-Execution completed with result: 4 files suceeded.
+Execution completed with result: 4 files succeeded.
 
 $ tree -a
 
@@ -238,8 +238,8 @@ gulp.task('wav2ogg', function() {
   dotPreviews: true,   // append '.prevews' to dirname
   nksfDotOgg: true,    // rename extension to '.nksf.ogg'
   freq: 44100,         // sampling rate for output .ogg audio
+  fadeout: 0.25,       // fadeout duration seconds from end
   silence: '-90dB',    // threshold level for removing silnce from end
-  fadeout: 110250,     // number of samples for fadeout
   quality: 5,          // quality of .ogg audio. 0-10'
   skipError: false     // skip on error, need gulp-plumber, default: false
 }
