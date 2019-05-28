@@ -37,23 +37,23 @@ program
   .command('exec <dir>')
   .description('Generate preview audio from .nksf preset files recursively.')
   .option('-d, --debug <level>',             'console verbosity level in testing, 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio', intArg,  0)
-  .option('-r, --dry-run',                   descs.dryRun,               defaults.dryRun)
-  .option('-b, --bitwig <path>',             descs.bitwig,               defaults.bitwig)
-  .option('-u, --url <URL>',                 descs.url,                  defaults.url)
+  .option('-r, --dry-run',                   descs.dryRun,                defaults.dryRun)
+  .option('-b, --bitwig <path>',             descs.bitwig,                defaults.bitwig)
+  .option('-u, --url <URL>',                 descs.url,                   defaults.url)
   .option('-s, --skip-error',                descs.skipError)
   .option('-k, --skip-exist',                descs.skipExist)
   .option('-h, --show-plugin',               descs.showPlugin)
   .option('-c, --clip <path>',               descs.clip,                  defaults.clip)
   .option('-f, --fxb <path>',                descs.fxb,                   defaults.fxb)
   .option('-w, --wav <path>',                descs.wav,                   defaults.wav)
-  .option('-t, --timeout <msec>',            descs.timeout,     msecArg, defaults.timeout)
-  .option('-a, --wait-plugin <msec>',        descs.waitPlugin,  msecArg, defaults.waitPlugin)
-  .option('-i, --wait-preset <msec>',        descs.waitPreset,  msecArg, defaults.waitPreset)
-  .option('-e, --tempo <BPM>',               descs.tempo,       intArg,  defaults.tempo)
-  .option('-f, --freq <Hz>',                 descs.freq,        intArg,  defaults.freq)
-  .option('-d, --fadeout <sec>',             descs.fadeout,     floatArg,defaults.fadeout)
-  .option('-l, --silence <dB>',              descs.silence,              defaults.silence)
-  .option('-q, --quality <number>',          descs.quality,     intArg,  defaults.quality)
+  .option('-t, --timeout <msec>',            descs.timeout,     msecArg,  defaults.timeout)
+  .option('-a, --wait-plugin <msec>',        descs.waitPlugin,  msecArg,  defaults.waitPlugin)
+  .option('-i, --wait-preset <msec>',        descs.waitPreset,  msecArg,  defaults.waitPreset)
+  .option('-e, --tempo <BPM>',               descs.tempo,       intArg,   defaults.tempo)
+  .option('-f, --freq <Hz>',                 descs.freq,        intArg,   defaults.freq)
+  .option('-d, --fadeout <sec>',             descs.fadeout,     floatArg, defaults.fadeout)
+  .option('-l, --silence <dB>',              descs.silence,               defaults.silence)
+  .option('-q, --quality <number>',          descs.quality,     intArg,   defaults.quality)
   .action(execCommand);
 
 program
@@ -78,6 +78,12 @@ program
   .option('-y, --yes',       'no comfirmation', false)
   .option('-c, --corrupted', 'find corrupted .nksf.ogg files and clean them', false)
   .action(cleanCommand);
+
+// error on unknown commands
+program.on('command:*', function () {
+  console.error('Invalid command: %s\nSee --help for a list of available commands.', program.args.join(' '));
+  process.exit(1);
+});
 
 program.parse(process.argv);
 
@@ -163,11 +169,6 @@ function _cleanCorruptedFiles(dir, options) {
     console.info('".nksf.ogg" files are not found.');
     return;
   }
-  // var rl = readline.createInterface({
-  //   input: process.stdin,
-  //   output: process.stdout
-  // });
-
 
   const corruptedFiles = [];
   var fileCount = 0;
@@ -177,7 +178,7 @@ function _cleanCorruptedFiles(dir, options) {
       try {
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
- //       readline.cursorTo(process.stdout);
+        // readline.cursorTo(process.stdout);
         process.stdout.write(chalk.greenBright(`checking.. | ${++fileCount}/${files.length} | `));
         process.stdout.write(rf);
         await _detectCorrupted(file);
@@ -186,7 +187,7 @@ function _cleanCorruptedFiles(dir, options) {
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
         process.stdout.write(chalk.redBright(err.message));
-        //        process.stdout.write('\n');
+        // process.stdout.write('\n');
       }
     }
     process.stdout.write('\n');
