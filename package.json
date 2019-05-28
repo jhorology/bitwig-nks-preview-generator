@@ -24,7 +24,7 @@
     "bws-nksf2ogg": "./bin/bws-nksf2ogg"
   },
   "dependencies": {
-    "bitwig-websocket-rpc": "^0.1.1",
+    "bitwig-websocket-rpc": "^0.1.3",
     "chalk": "^2.4.2",
     "cli-progress": "^2.1.1",
     "coffeescript": "^2.4.1",

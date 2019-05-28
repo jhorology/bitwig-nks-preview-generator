@@ -191,7 +191,7 @@ function _cleanCorruptedFiles(dir, options) {
     }
     process.stdout.write('\n');
     if (!corruptedFiles.length) {
-      console.info(chalk.greenBright('All files are seems to be OK.'));
+      console.info(chalk.greenBright.bold('All files are seems to be OK.'));
       return;
     }
     if (options.yes) {

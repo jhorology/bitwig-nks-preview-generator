@@ -6,7 +6,7 @@ Publishing NPM package soon.
 ## Requirements
 
 - Bitwig Studio version 2.5.1
-- ffmpeg version 4.1.3 or above.
+- ffmpeg version 4.1.3 or above, compiled with --enable-libvorbis
 - node.js v10 or above.
 
 
@@ -15,7 +15,7 @@ Global Install
 ```sh
 npm install bitwig-nks-preview-generator -g
 # install WebSocket RPC server Bitwig Studio Extension
-bws-nksf2ogg install
+bws-rpc install
 ```
 Local Install
 ```sh
@@ -24,7 +24,7 @@ cd my-nks-preview-project
 npm init
 npm install bitwig-nks-preview-generator --save-dev
 # install WebSocket RPC server Bitwig Studio Extension
-npx bws-nksf2ogg install
+npx bws-rpc install
 ```
 
 
@@ -40,7 +40,6 @@ npx bws-nksf2ogg install
 
     Commands:
       exec [options] <dir>   Generate preview audio from .nksf preset files.
-      install [options]      Install Bitwig Studio WebSockets RPC server extension.
       list [options] <dir>   List .nksf or .nksf.ogg files.
       clean [options] <dir>  Delete .previews folders recursively.
     
@@ -72,16 +71,6 @@ npx bws-nksf2ogg install
       -q, --quality <number>    quality of .ogg audio. 0-10 (default: 5)
       -h, --help                output usage information
   
-    $ bws-nksf2ogg install --help
-    Usage: install [options]
-    
-    Install Bitwig Studio WebSockets RPC server extension.
-    
-     Options:
-      -e, --extension-dir <path>  Bitwig Studio Extension directory
-                                  (default: "<platform specific>")
-      -h, --help                  output usage information
-    
     $ bws-nksf2ogg list --help
     Usage: list [options] <dir>
     
