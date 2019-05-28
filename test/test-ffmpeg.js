@@ -59,6 +59,22 @@ const tests =  [
       {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 9},
       {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 10}
     ]
+  }, {
+    name: 'quality',
+    src: 'wav/PD ChampionBassPad [GS].wav',
+    conds: [
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 0},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 1},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 2},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 3},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 4},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 5},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 6},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 7},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 8},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 9},
+      {fadeout: 0.25, silence: '-90dB', freq: 44100, quality: 10}
+    ]
   }];
 
 (async () => {

@@ -68,7 +68,7 @@ npx bws-rpc install
       -f, --freq <Hz>           sampling rate for output .ogg audio (default: 44100)
       -d, --fadeout <sec>       fadeout duration seconds from end (default: 0.25)
       -l, --silence <dB>        threshold level for removing silence from end, dB or 0-1 (default: "-90dB")
-      -q, --quality <number>    quality of .ogg audio. 0-10 (default: 5)
+      -q, --quality <number>    quality of .ogg audio. 0-10 (default: 6)
       -h, --help                output usage information
   
     $ bws-nksf2ogg list --help
