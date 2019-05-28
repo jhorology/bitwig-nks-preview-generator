@@ -67,7 +67,7 @@ npx bws-rpc install
       -e, --tempo <BPM>         BPM for bouncing clip. (default: 120)
       -f, --freq <Hz>           sampling rate for output .ogg audio (default: 44100)
       -d, --fadeout <sec>       fadeout duration seconds from end (default: 0.25)
-      -l, --silence <dB>        threshold level for removing silence from end (default: "-90dB")
+      -l, --silence <dB>        threshold level for removing silence from end, dB or 0-1 (default: "-90dB")
       -q, --quality <number>    quality of .ogg audio. 0-10 (default: 5)
       -h, --help                output usage information
   

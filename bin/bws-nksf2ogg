@@ -52,7 +52,7 @@ program
   .option('-e, --tempo <BPM>',               descs.tempo,       intArg,   defaults.tempo)
   .option('-f, --freq <Hz>',                 descs.freq,        intArg,   defaults.freq)
   .option('-d, --fadeout <sec>',             descs.fadeout,     floatArg, defaults.fadeout)
-  .option('-l, --silence <dB>',              descs.silence,               defaults.silence)
+  .option('-l, --silence <options>',         descs.silence,               defaults.silence)
   .option('-q, --quality <number>',          descs.quality,     intArg,   defaults.quality)
   .action(execCommand);
 
