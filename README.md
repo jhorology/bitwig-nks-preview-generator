@@ -1,14 +1,11 @@
 # bitwig-nks-preview-generator
 Streaming convert NKSF files to preview audio with using Bitwig Studio.
 
-Publishing NPM package soon.
-
 ## Requirements
-
+- macOS/Windows
 - Bitwig Studio version 2.5.1
 - ffmpeg version 4.1.3 or above, compiled with --enable-libvorbis
 - node.js v10 or above.
-
 
 ## Installation
 Global Install
@@ -26,8 +23,6 @@ npm install bitwig-nks-preview-generator --save-dev
 # install WebSocket RPC server Bitwig Studio Extension
 npx bws-rpc install
 ```
-
-
 ## Command Options
     $ bws-nksf2ogg --help
     Usage: bws-nksf2ogg [options] [command]
@@ -100,7 +95,8 @@ npx bws-rpc install
 1. Close Bitwig studio application if already it's opened.
 1. Execute `bws-nksf2ogg exec [options] <dir>` command on terminal.
 1. Bitwig Studio will automatically launch after command.
-1. If you see popup message "Please click first clip" on Bitwig Studio, Click (not launch) the clip at Track 1, Slot 1. It's just needed to take focus of Bitwig Studio window for remote automation once at initial time. After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
+1. If you see popup message "Please click first clip" on Bitwig Studio, Click (not launch) the clip at Track 1, Slot 1. It's just needed to take focus of Bitwig Studio window for remote automation once at initial time. If note editor is not shown in window, double click might be better because 
+progress of bouncing can be visually observed. After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
 1. When processing is done, Bitwig Studio will shutdown automatically.
 
 ### Execution Example
@@ -253,7 +249,6 @@ gulp.task('wav2ogg', function() {
   - Serum
   - Spire
   - Repro-1     (even work if it's vendor's official .nksf)
-- Will support macOS, Windows and WSL. (Currently only tested on macOS)
-
+- Will support WSL in the future.
 ## License
 [MIT](LICENSE)
