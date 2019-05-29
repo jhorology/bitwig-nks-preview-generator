@@ -21,7 +21,7 @@ cd my-nks-preview-project
 npm init
 npm install bitwig-nks-preview-generator --save-dev
 # install WebSocket RPC server Bitwig Studio Extension
-bws-nksf2ogg install
+npx bws-nksf2ogg install
 ```
 ## Command Options
     $ bws-nksf2ogg --help
