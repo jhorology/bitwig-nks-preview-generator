@@ -12,7 +12,7 @@ Global Install
 ```sh
 npm install bitwig-nks-preview-generator -g
 # install WebSocket RPC server Bitwig Studio Extension
-bws-rpc install
+bws-nksf2ogg install
 ```
 Local Install
 ```sh
@@ -21,7 +21,7 @@ cd my-nks-preview-project
 npm init
 npm install bitwig-nks-preview-generator --save-dev
 # install WebSocket RPC server Bitwig Studio Extension
-npx bws-rpc install
+bws-nksf2ogg install
 ```
 ## Command Options
     $ bws-nksf2ogg --help
@@ -35,6 +35,7 @@ npx bws-rpc install
 
     Commands:
       exec [options] <dir>   Generate preview audio from .nksf preset files.
+      install [options]      Install Bitwig Studio WebSockets RPC server extension.
       list [options] <dir>   List .nksf or .nksf.ogg files.
       clean [options] <dir>  Delete .previews folders recursively.
     
@@ -65,6 +66,15 @@ npx bws-rpc install
       -l, --silence <dB>        threshold level for removing silence from end, dB or 0-1 (default: "-90dB")
       -q, --quality <number>    quality of .ogg audio. 0-10 (default: 6)
       -h, --help                output usage information
+  
+    $ bws-nksf2ogg install --help
+    Usage: install [options]
+
+    Install Bitwig Studio WebSockets RPC server extension.
+
+    Options:
+      -e, --extension-dir <path>  Bitwig Studio Extension directory (default: "<platform specific>")
+      -h, --help                  output usage information
   
     $ bws-nksf2ogg list --help
     Usage: list [options] <dir>
