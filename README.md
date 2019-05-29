@@ -185,6 +185,14 @@ $ tree -a
             ├── PL\ Beepy\ ting\ [GI].wav
             └── PL\ Big\ Bells\ [AS].wav
 ```
+## Fadeout `--fadeout <duration>`
+
+In most case, fadeout doesn't function, beacause note length(1bar) is enough smaller than clip length(2bar). This option is designed to fade out too long release tone or sequence pattern. so I added 8 or 4 note length to clip length for fade margine.
+Just for reference, ffmpeg audio filter graph is as follows:
+```
+[areverse] -> [afade] -> [silenceremove] -> [areverse]
+```
+
 
 ## Adjust Timings
 There is no way to know via remote automaition when the plugin or preset loading is finished so far. These timings are depends on plugin and your environment. The options `--wait-plugin <msec>, --wait-preset <msec>` must be set large enough value. Approximate setting time on my environment:
