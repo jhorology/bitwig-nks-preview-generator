@@ -110,18 +110,18 @@ const log = require('bitwig-nks-preview-generator').logger('custom-mapper');
  * @return {String} - Bitwig Studio MIDI clip file path.
  */
 module.exports = function(soundInfo) {
-  let clip;
+  var clip
   if (soundInfo.types[0][0] === 'Bass') {
     // return absolute path or relative path from this .js file's directory.
-    clip = 'Bitwig Studio Files/NKS-Preview-C1-Single.bwclip'; 
+    clip = 'Bitwig Studio Files/NKS-Preview-C1-Single.bwclip'
   } else if (soundInfo.types[0][1].includes('Piano')) {
-    clip = 'Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip';
+    clip = 'Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip'
   } else {
-    clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip';
+    clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip'
   }
-  log.info('NKS Info:', soundInfo, 'Clip:', clip);
-  return clip;
-};
+  log.info('NKS Info:', soundInfo, 'Clip:', clip)
+  return clip
+}
 ```
 - Custom MIDI clip should contains only MIDI data. When edit and save it on Bitwig Studio, don't forget to delete device.
 - Support [async function](test/test-async-mapper.js).
