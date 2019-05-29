@@ -28,3 +28,5 @@ coverage
 npm-debug.log
 yarn-error.log
 /test/out/
+rpc-report.json
+rpc-actions.json
