@@ -57,7 +57,7 @@ npx bws-rpc install
       -s, --skip-error          skip on error, continue processing
       -k, --skip-exist          skip .nksf file that already has preview audio
       -h, --show-plugin         show plugin window
-      -c, --clip <path>         .bwclip MIDP clip or [.js | .coffee] mapper program
+      -c, --clip <path>         .bwclip MIDI clip or [.js | .coffee] mapper program
                                 (default: "<package>/Bitwig Studio Files/NKS-Preview-C2-Single.bwclip")
       -f, --fxb <path>          directory for store intermediate .fxb files (default: "temp/fxb")
       -w, --wav <path>          directory for store intermediate .wav files (default: "temp/wav")

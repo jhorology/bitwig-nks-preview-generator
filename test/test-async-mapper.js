@@ -11,7 +11,7 @@ module.exports = async function(soundInfo) {
   return map(soundInfo)
 }
 
-async function wait(msec) {
+function wait(msec) {
   return new Promise(resolve => setTimeout(resolve, msec))
 }
 

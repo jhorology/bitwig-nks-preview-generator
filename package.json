@@ -3,7 +3,7 @@
   "version": "0.1.0-SNAPSHOT",
   "description": "Streaming convert NKSF files to preview audio with using Bitwig Studio.",
   "engines": {
-    "node": ">=10"
+    "node": ">=10.0.0"
   },
   "engineStrict": true,
   "main": "index.js",
