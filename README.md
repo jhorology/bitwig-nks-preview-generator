@@ -94,38 +94,6 @@ npx bws-rpc install
       -c, --corrupted  find corrupted .nksf.ogg files and clean them
       -h, --help       output usage information
 
-## MIDI Clip Mapper
-The mapper .js program allows for mapping NKS sound infomation to your custom MIDI clip.
-```sh
-bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
-```
-[An example](clip-mapper-example.js)
-```js
-// use logger to follow --debug option
-const log = require('bitwig-nks-preview-generator').logger('custom-mapper')
-/**
- * Example NKS Preview MIDI clip mapper for UVI Key Suite Digital.
- * 
- * @param {Object} soundInfo - NKS Sound Info (metadata).
- * @return {String} - Bitwig Studio MIDI clip file path.
- */
-module.exports = function(soundInfo) {
-  var clip
-  if (soundInfo.types[0][0] === 'Bass') {
-    // return absolute path or relative path from this .js file's directory.
-    clip = 'Bitwig Studio Files/NKS-Preview-C1-Single.bwclip'
-  } else if (soundInfo.types[0][1].includes('Piano')) {
-    clip = 'Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip'
-  } else {
-    clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip'
-  }
-  log.info('NKS Info:', soundInfo, 'Clip:', clip)
-  return clip
-}
-```
-- Custom MIDI clip should contains only MIDI data. When edit and save it on Bitwig Studio, don't forget to delete device.
-- Support [async function](test/test-async-mapper.js).
-- Support [CoffeeScript](clip-mapper-example.coffee).
 
 ## Procedure for Generating Preview Audio
 1. Check WebSocket RPC Server module is enabled in controller preferences panel of Bitwig Studio.
@@ -185,21 +153,53 @@ $ tree -a
             ├── PL\ Beepy\ ting\ [GI].wav
             └── PL\ Big\ Bells\ [AS].wav
 ```
-## Fadeout `--fadeout <duration>`
-
-In most case, fadeout doesn't function, beacause note length(1bar) is enough smaller than clip length(2bar). This option is designed to fade out too long release tone or sequence pattern. so I added 8 or 4 note length to clip length for fade margine.
-Just for reference, ffmpeg audio filter graph is as follows:
-```
-[areverse] -> [afade] -> [silenceremove] -> [areverse]
-```
-
-
 ## Adjust Timings
 There is no way to know via remote automaition when the plugin or preset loading is finished so far. These timings are depends on plugin and your environment. The options `--wait-plugin <msec>, --wait-preset <msec>` must be set large enough value. Approximate setting time on my environment:
   - Hive                                      `--wait-preset 1000`
   - Serum                                     `--wait-preset 1500`
   - Spire                                     `--wait-preset 1500`
   - UVIWorkstation(Key Suite Digital)         `--wait-preset 5000`
+
+## MIDI Clip Mapper
+The mapper .js program allows for mapping NKS sound infomation to your custom MIDI clip.
+```sh
+bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
+```
+[An example](clip-mapper-example.js)
+```js
+// use logger to follow --debug option
+const log = require('bitwig-nks-preview-generator').logger('custom-mapper')
+/**
+ * Example NKS Preview MIDI clip mapper for UVI Key Suite Digital.
+ * 
+ * @param {Object} soundInfo - NKS Sound Info (metadata).
+ * @return {String} - Bitwig Studio MIDI clip file path.
+ */
+module.exports = function(soundInfo) {
+  var clip
+  if (soundInfo.types[0][0] === 'Bass') {
+    // return absolute path or relative path from this .js file's directory.
+    clip = 'Bitwig Studio Files/NKS-Preview-C1-Single.bwclip'
+  } else if (soundInfo.types[0][1].includes('Piano')) {
+    clip = 'Bitwig Studio Files/NKS-Preview-Cmaj-Chord.bwclip'
+  } else {
+    clip = 'Bitwig Studio Files/NKS-Preview-C2-Single.bwclip'
+  }
+  log.info('NKS Info:', soundInfo, 'Clip:', clip)
+  return clip
+}
+```
+- Custom MIDI clip should contains only MIDI data. When edit and save it on Bitwig Studio, don't forget to delete device.
+- Support [async function](test/test-async-mapper.js).
+- Support [CoffeeScript](clip-mapper-example.coffee).
+
+## Fadeout `--fadeout <duration>`
+In most case, fadeout doesn't function, beacause note length(1bar) is enough smaller than clip length(2bar). This option is designed to fade out too long release tone or sequence pattern. so I added 8 or 4 note length to clip length for fade margine.
+Just for reference, ffmpeg audio filter graph is as follows:
+```
+[areverse] -> [afade] -> [silenceremove] -> [areverse]
+```
+
 
 ## Module Use
 The following modules are available for general use.
