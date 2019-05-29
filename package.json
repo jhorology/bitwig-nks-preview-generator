@@ -8,7 +8,7 @@
   "engineStrict": true,
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "eslint": "eslint lib/*.js ./*.js bin/bws-nksf2ogg"
   },
   "repository": {
     "type": "git",

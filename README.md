@@ -99,7 +99,7 @@ The mapper .js program allows for mapping NKS sound infomation to your custom MI
 ```sh
 bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
 ```
-[An example](clip-mapper-example.js):
+[An example](clip-mapper-example.js)
 ```js
 // use logger to follow --debug option
 const log = require('bitwig-nks-preview-generator').logger('custom-mapper');
