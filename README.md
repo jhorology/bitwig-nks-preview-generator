@@ -102,7 +102,7 @@ bws-nksf2ogg exec --clip clip-mapper-example.js <targetDiretory>
 [An example](clip-mapper-example.js)
 ```js
 // use logger to follow --debug option
-const log = require('bitwig-nks-preview-generator').logger('custom-mapper');
+const log = require('bitwig-nks-preview-generator').logger('custom-mapper')
 /**
  * Example NKS Preview MIDI clip mapper for UVI Key Suite Digital.
  * 
@@ -187,7 +187,11 @@ $ tree -a
 ```
 
 ## Adjust Timings
-There is no way to know via remote automaition when the plugin or preset loading is finished so far. These timings are depends on plugin and your environment. The options `--wait-plugin <msec>, --wait-preset <msec>` must be set large enough value.
+There is no way to know via remote automaition when the plugin or preset loading is finished so far. These timings are depends on plugin and your environment. The options `--wait-plugin <msec>, --wait-preset <msec>` must be set large enough value. Approximate setting time on my environment:
+  - Hive                                      `--wait-preset 1000`
+  - Serum                                     `--wait-preset 1500`
+  - Spire                                     `--wait-preset 1500`
+  - UVIWorkstation(Key Suite Digital)         `--wait-preset 5000`
 
 ## Module Use
 The following modules are available for general use.
