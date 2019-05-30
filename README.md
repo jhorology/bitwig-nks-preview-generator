@@ -3,9 +3,11 @@ Streaming convert NKSF files to preview audio with using Bitwig Studio.
 
 ## Requirements
 - macOS/Windows
-- Bitwig Studio version 2.5.1
+- Bitwig Studio version 2.5.1, 3.0 beta4 or above
 - ffmpeg version 4.1.3 or above, compiled with --enable-libvorbis
+  - It's easy to install through [homebrew](https://brew.sh) or [chocolatey](https://chocolatey.org).
 - node.js v10 or above.
+  - I recommend to use [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
 
 ## Installation
 Global Install
