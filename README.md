@@ -109,7 +109,7 @@ npx bws-nksf2ogg install
 1. Bitwig Studio will automatically launch after command.
 1. If you see popup message "Please click first clip" on Bitwig Studio, Click (not launch) the clip at Track 1, Slot 1. It's just needed to take focus of Bitwig Studio window for remote automation once at initial time. If note editor is not shown in window, double click might be better because 
 progress of bouncing can be visually observed.
-1 After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
+1. After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
 1. When processing is done, Bitwig Studio will shutdown automatically.
 
 ### Execution Example
