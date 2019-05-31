@@ -204,9 +204,9 @@ module.exports = function(soundInfo) {
 
 ## Fadeout `--fadeout <duration>`
 In most case, fadeout doesn't function, beacause note length(1bar) is enough smaller than clip length(2bar). This option is designed to fade out a very slow-release tone or sequence pattern. so I added 8 or 4 note length to clip length for fade margine.
-Just for reference, ffmpeg audio filter graph is as follows:
+Just for reference, SoX audio filter graph is as follows:
 ```
-[areverse] -> [afade] -> [silenceremove] -> [areverse]
+[reverse] -> [fade] -> [silence] -> [reverse] -> [rate]
 ```
 
 
