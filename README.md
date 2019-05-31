@@ -251,7 +251,7 @@ gulp.task('wav2ogg', function() {
   freq: 44100,         // sampling rate for output .ogg audio
   fadeout: 0.25,       // fadeout duration seconds from end
   silence: '-90dB',    // threshold level for removing silnce from end
-  quality: 5,          // quality of .ogg audio. 0-10'
+  quality: 6,          // quality of .ogg audio. 0-10'
   skipError: false     // skip on error, need gulp-plumber, default: false
 }
 ```
