@@ -4,11 +4,11 @@ const fs = require('fs'),
       path = require('path'),
       readline = require('readline'),
       program = require('commander'),
+      { spawn, execSync } = require('child_process'),
       updateNotifier = require('update-notifier'),
       rimraf = require('rimraf'),
       glob = require('glob'),
       Confirm = require('prompt-confirm'),
-      ffmpeg = require('fluent-ffmpeg'),
       { Bar } = require('cli-progress'),
       chalk = require('chalk'),
       nksf2ogg = require('../lib/bitwig-nks-preview-generator'),
@@ -68,7 +68,7 @@ program
   .option('-r, --relative', 'list files as relative path from <dir>', false)
   .option('-m, --missing', 'list preset files that doesn\'t have preview', false)
   .option('-u, --useless', 'list preview files that doesn\'t have preset', false)
-  .option('-f, --ffprobe', 'list files as result of ffprobe', false)
+  .option('-s, --sox', 'list files as result of sox --i', false)
   .action(listCommand)
 
 program
@@ -122,27 +122,46 @@ function installCommand(options) {
  * @param {Object} options
  */
 function listCommand(dir, options) {
+  _checkSoX()
   _checkDir(dir)
   const pattern = options.missing ? `${dir}/**/*.nksf` : `${dir}/**/.previews/*.nksf.ogg`,
         filter = options.missing ? _hasNotPreview : (options.useless ? _hasNotPreset : undefined),
-        files = _glob(pattern, filter)
-  files.forEach(file => {
-    if (options.absolute) {
-      file = path.resolve(file)
-    } else if (options.relative) {
-      file = path.relative(dir, file)
+        files = _glob(pattern, filter);
+  (async () => {
+    for (let file of files) {
+      if (options.absolute) {
+        file = path.resolve(file)
+        console.info(file)
+      } else if (options.relative) {
+        file = path.relative(dir, file)
+        console.info(file)
+      } else if (options.sox) {
+        process.stdout.write(await _soxInfo(file))
+      } else {
+        console.info(file)
+      }
     }
-    if (options.ffprobe) {
-      ffmpeg(file)
-        .ffprobe(function(err, data) {
-          if (err) {
-            console.error(err)
-          }
-          console.log(data)
-        })
-    } else {
-      console.info(file)
-    }
+  })()
+}
+
+function _soxInfo(file) {
+  return new Promise((resolve, reject) => {
+    const sox = spawn('sox', ['--i', file], { stdio: 'pipe' })
+    var buffer = Buffer.alloc(0),
+        error = Buffer.alloc(0)
+    sox.stdout.on('data', data => {
+      buffer = Buffer.concat([buffer, data])
+    })
+    sox.stderr.on('data', data => {
+      error = Buffer.concat([error, data])
+    })
+    sox.on('close', code => {
+      if (code === 0) {
+        resolve(buffer)
+      } else {
+        reject(new Error(`SoX exited with code:${code} stderr:${error.toString()}`))
+      }
+    })
   })
 }
 
@@ -152,6 +171,7 @@ function listCommand(dir, options) {
  * @param {Object} options
  */
 function cleanCommand(dir, options) {
+  _checkSoX()
   _checkDir(dir)
   if (options.corrupted) {
     _cleanCorruptedFiles(dir, options)
@@ -229,17 +249,22 @@ function _cleanPreviews(dir, options) {
 
 function _detectCorrupted(file) {
   return new Promise((resolve, reject) => {
-    const cmd = ffmpeg(file)
-      // .audioFilter('silencedetect=n=-90dB:d=1')
-      .format('wav')
-      .on('error', function(err) {
-        reject(err)
-      })
-      .on('end', function() {
+    const sox = spawn('sox', [file, '-t', 'wav', '-'], { stdio: 'pipe' })
+    var buffer = Buffer.alloc(0),
+        error = Buffer.alloc(0)
+    sox.stdout.on('data', data => {
+      buffer = Buffer.concat([buffer, data])
+    })
+    sox.stderr.on('data', data => {
+      error = Buffer.concat([error, data])
+    })
+    sox.on('close', code => {
+      if (code === 0) {
         resolve()
-      })
-    var ffstream = cmd.pipe()
-    ffstream.on('data', function(chunk) {})
+      } else {
+        reject(new Error(`SoX exited with code:${code} stderr:${error.toString()}`))
+      }
+    })
   })
 }
 
@@ -258,6 +283,7 @@ const summary = {
  * @param {Object} options
  */
 function execCommand(dir, options) {
+  _checkSoX()
   _checkDir(dir)
   _checkFile(options.bitwig)
   _checkFile(options.clip)
@@ -394,6 +420,19 @@ function _checkJsFunction(file) {
   }
   if (typeof fn !== 'function') {
     console.error('error: --clip <path> .js file should export function')
+    process.exit(1)
+  }
+}
+
+function _checkSoX() {
+  try {
+    const ret = execSync('sox --version')
+    if (!ret || !ret.includes('SoX')) {
+      console.error('error: you don\'t have a executable [sox] command.')
+      process.exit(1)
+    }
+  } catch (err) {
+    console.error('error: you don\'t have a executable [sox] command.')
     process.exit(1)
   }
 }

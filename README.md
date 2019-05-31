@@ -4,7 +4,7 @@ Streaming convert NKSF files to preview audio with using Bitwig Studio.
 ## Requirements
 - macOS/Windows
 - Bitwig Studio version 2.5.1, 3.0 beta4 or above
-- ffmpeg version 4.1.3 or above, compiled with --enable-libvorbis
+- [SoX](http://sox.sourceforge.net) version 14.4.1 or above, compiled with --with-libvorbis
   - It's easy to install through [homebrew](https://brew.sh) or [chocolatey](https://chocolatey.org).
 - node.js v10 or above.
   - I recommend to use [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
@@ -65,7 +65,7 @@ npx bws-nksf2ogg install
       -e, --tempo <BPM>         BPM for bouncing clip. (default: 120)
       -f, --freq <Hz>           sampling rate for output .ogg audio (default: 44100)
       -d, --fadeout <sec>       fadeout duration seconds from end (default: 0.25)
-      -l, --silence <dB>        threshold level for removing silence from end, dB or 0-1 (default: "-90dB")
+      -l, --silence <dB>        threshold level for removing silence from end, dB or 0-100% (default: "-90dB")
       -q, --quality <number>    quality of .ogg audio. 0-10 (default: 6)
       -h, --help                output usage information
   
@@ -88,7 +88,7 @@ npx bws-nksf2ogg install
       -r, --relative  list files as relative path from <dir>
       -m, --missing   list preset files that doesn't have preview
       -u, --useless   list preview files that doesn't have preset
-      -f, --ffprobe   list files as result of ffprobe
+      -f, --sox       list files as result of sox --i
       -h, --help      output usage information
     
     $ bws-nksf2ogg clean --help
@@ -108,7 +108,8 @@ npx bws-nksf2ogg install
 1. Execute `bws-nksf2ogg exec [options] <dir>` command on terminal.
 1. Bitwig Studio will automatically launch after command.
 1. If you see popup message "Please click first clip" on Bitwig Studio, Click (not launch) the clip at Track 1, Slot 1. It's just needed to take focus of Bitwig Studio window for remote automation once at initial time. If note editor is not shown in window, double click might be better because 
-progress of bouncing can be visually observed. After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
+progress of bouncing can be visually observed.
+1 After processing is started, using other application is OK. But don't touch anything on Bitwig Studio.
 1. When processing is done, Bitwig Studio will shutdown automatically.
 
 ### Execution Example
@@ -202,7 +203,7 @@ module.exports = function(soundInfo) {
 - Support [CoffeeScript](clip-mapper-example.coffee).
 
 ## Fadeout `--fadeout <duration>`
-In most case, fadeout doesn't function, beacause note length(1bar) is enough smaller than clip length(2bar). This option is designed to fade out too long release tone or sequence pattern. so I added 8 or 4 note length to clip length for fade margine.
+In most case, fadeout doesn't function, beacause note length(1bar) is enough smaller than clip length(2bar). This option is designed to fade out a very slow-release tone or sequence pattern. so I added 8 or 4 note length to clip length for fade margine.
 Just for reference, ffmpeg audio filter graph is as follows:
 ```
 [areverse] -> [afade] -> [silenceremove] -> [areverse]
