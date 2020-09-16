@@ -5,7 +5,7 @@ const log = require('.').logger('custom-mapper')
  * @param {Object} soundInfo - NKS Sound Info (metadata).
  * @return {String} - Bitwig Studio MIDI clip file path.
  */
-module.exports = function(soundInfo) {
+module.exports = function (soundInfo) {
   var clip
   if (soundInfo.types[0][0] === 'Bass') {
     // return absolute path or relative path from this .js file's directory.

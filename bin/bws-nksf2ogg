@@ -1,24 +1,27 @@
 #!/usr/bin/env node
 
 const fs = require('fs'),
-      path = require('path'),
-      readline = require('readline'),
-      program = require('commander'),
-      { spawn, execSync } = require('child_process'),
-      updateNotifier = require('update-notifier'),
-      rimraf = require('rimraf'),
-      glob = require('glob'),
-      Confirm = require('prompt-confirm'),
-      { Bar } = require('cli-progress'),
-      chalk = require('chalk'),
-      nksf2ogg = require('../lib/bitwig-nks-preview-generator'),
-      Local = require('../lib/bitwig-studio-local'),
-      logger = require('../lib/logger'),
-      { PluginProcessingError, PluginDiscardFile } = require('../lib/gulp-plugin-wrapper'),
-      pkg = require('../package.json'),
-      notifier = updateNotifier({ pkg }),
-      defaults = nksf2ogg.defaultOptions,
-      descs = nksf2ogg.optionsDescriptions
+  path = require('path'),
+  readline = require('readline'),
+  program = require('commander'),
+  { spawn, execSync } = require('child_process'),
+  updateNotifier = require('update-notifier'),
+  rimraf = require('rimraf'),
+  glob = require('glob'),
+  Confirm = require('prompt-confirm'),
+  { Bar } = require('cli-progress'),
+  chalk = require('chalk'),
+  nksf2ogg = require('../lib/bitwig-nks-preview-generator'),
+  Local = require('../lib/bitwig-studio-local'),
+  logger = require('../lib/logger'),
+  {
+    PluginProcessingError,
+    PluginDiscardFile
+  } = require('../lib/gulp-plugin-wrapper'),
+  pkg = require('../package.json'),
+  notifier = updateNotifier({ pkg }),
+  defaults = nksf2ogg.defaultOptions,
+  descs = nksf2ogg.optionsDescriptions
 
 require('coffeescript/register')
 
@@ -28,14 +31,17 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
   })
 }
 
-program
-  .description(pkg.description)
-  .version(pkg.version)
+program.description(pkg.description).version(pkg.version)
 
 program
   .command('exec <dir>')
   .description('Generate preview audio from .nksf preset files recursively.')
-  .option('-d, --debug <level>', 'console verbosity level in testing, 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio', intArg, 0)
+  .option(
+    '-d, --debug <level>',
+    'console verbosity level in testing, 0:none 1:ERROR 2:INFO 3:DEBUG 4:Bitwig Studio',
+    intArg,
+    0
+  )
   .option('-r, --dry-run', descs.dryRun, defaults.dryRun)
   .option('-b, --bitwig <path>', descs.bitwig, defaults.bitwig)
   .option('-u, --url <URL>', descs.url, defaults.url)
@@ -46,8 +52,18 @@ program
   .option('-f, --fxb <path>', descs.fxb, defaults.fxb)
   .option('-w, --wav <path>', descs.wav, defaults.wav)
   .option('-t, --timeout <msec>', descs.timeout, msecArg, defaults.timeout)
-  .option('-a, --wait-plugin <msec>', descs.waitPlugin, msecArg, defaults.waitPlugin)
-  .option('-i, --wait-preset <msec>', descs.waitPreset, msecArg, defaults.waitPreset)
+  .option(
+    '-a, --wait-plugin <msec>',
+    descs.waitPlugin,
+    msecArg,
+    defaults.waitPlugin
+  )
+  .option(
+    '-i, --wait-preset <msec>',
+    descs.waitPreset,
+    msecArg,
+    defaults.waitPreset
+  )
   .option('-e, --tempo <BPM>', descs.tempo, intArg, defaults.tempo)
   .option('-f, --freq <Hz>', descs.freq, intArg, defaults.freq)
   .option('-d, --fadeout <sec>', descs.fadeout, floatArg, defaults.fadeout)
@@ -58,7 +74,16 @@ program
 program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
-  .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', Local.defaultExtensionDir())
+  .option(
+    '-e, --extension-dir <path>',
+    'Bitwig Studio Extension directory',
+    Local.defaultExtensionDir()
+  )
+  .option(
+    '-a, --api <version>',
+    'Version of Bitwig Control Surface API',
+    '12'
+  )
   .action(installCommand)
 
 program
@@ -66,8 +91,8 @@ program
   .description('List .nksf or .nksf.ogg files recursively.')
   .option('-a, --absolute', 'list files as absolute path', false)
   .option('-r, --relative', 'list files as relative path from <dir>', false)
-  .option('-m, --missing', 'list preset files that doesn\'t have preview', false)
-  .option('-u, --useless', 'list preview files that doesn\'t have preset', false)
+  .option('-m, --missing', "list preset files that doesn't have preview", false)
+  .option('-u, --useless', "list preview files that doesn't have preset", false)
   .option('-s, --sox', 'list files as result of sox --i', false)
   .action(listCommand)
 
@@ -75,12 +100,19 @@ program
   .command('clean <dir>')
   .description('Delete .previews folders recursively.')
   .option('-y, --yes', 'no comfirmation', false)
-  .option('-c, --corrupted', 'find corrupted .nksf.ogg files and clean them', false)
+  .option(
+    '-c, --corrupted',
+    'find corrupted .nksf.ogg files and clean them',
+    false
+  )
   .action(cleanCommand)
 
 // error on unknown commands
-program.on('command:*', function() {
-  console.error('Invalid command: %s\nSee --help for a list of available commands.', program.args.join(' '))
+program.on('command:*', function () {
+  console.error(
+    'Invalid command: %s\nSee --help for a list of available commands.',
+    program.args.join(' ')
+  )
   process.exit(1)
 })
 
@@ -107,8 +139,12 @@ function floatArg(val, def) {
  */
 function installCommand(options) {
   _checkDir(options.extensionDir)
-  const basename = 'WebSocketRpcServer.bwextension'
-  const src = path.resolve(__dirname, '../node_modules/bitwig-websocket-rpc', basename)
+  const basename = `WebSocketRpcServer-API${options.api}.bwextension`
+  const src = path.resolve(
+    __dirname,
+    '../node_modules/bitwig-websocket-rpc',
+    basename
+  )
   const dest = path.join(options.extensionDir, basename)
   _checkFile(src)
   fs.copyFileSync(src, dest)
@@ -124,10 +160,16 @@ function installCommand(options) {
 function listCommand(dir, options) {
   _checkSoX()
   _checkDir(dir)
-  const pattern = options.missing ? `${dir}/**/*.nksf` : `${dir}/**/.previews/*.nksf.ogg`,
-        filter = options.missing ? _hasNotPreview : (options.useless ? _hasNotPreset : undefined),
-        files = _glob(pattern, filter);
-  (async () => {
+  const pattern = options.missing
+      ? `${dir}/**/*.nksf`
+      : `${dir}/**/.previews/*.nksf.ogg`,
+    filter = options.missing
+      ? _hasNotPreview
+      : options.useless
+      ? _hasNotPreset
+      : undefined,
+    files = _glob(pattern, filter)
+  ;(async () => {
     for (let file of files) {
       if (options.absolute) {
         file = path.resolve(file)
@@ -148,7 +190,7 @@ function _soxInfo(file) {
   return new Promise((resolve, reject) => {
     const sox = spawn('sox', ['--i', file], { stdio: 'pipe' })
     var buffer = Buffer.alloc(0),
-        error = Buffer.alloc(0)
+      error = Buffer.alloc(0)
     sox.stdout.on('data', data => {
       buffer = Buffer.concat([buffer, data])
     })
@@ -159,7 +201,9 @@ function _soxInfo(file) {
       if (code === 0) {
         resolve(buffer)
       } else {
-        reject(new Error(`SoX exited with code:${code} stderr:${error.toString()}`))
+        reject(
+          new Error(`SoX exited with code:${code} stderr:${error.toString()}`)
+        )
       }
     })
   })
@@ -188,15 +232,17 @@ function _cleanCorruptedFiles(dir, options) {
   }
 
   const corruptedFiles = []
-  var fileCount = 0;
-  (async () => {
+  var fileCount = 0
+  ;(async () => {
     for (let file of files) {
       const rf = path.relative(dir, file)
       try {
         readline.clearLine(process.stdout, 0)
         readline.cursorTo(process.stdout, 0)
         // readline.cursorTo(process.stdout);
-        process.stdout.write(chalk.greenBright(`checking.. | ${++fileCount}/${files.length} | `))
+        process.stdout.write(
+          chalk.greenBright(`checking.. | ${++fileCount}/${files.length} | `)
+        )
         process.stdout.write(rf)
         await _detectCorrupted(file)
       } catch (err) {
@@ -213,7 +259,7 @@ function _cleanCorruptedFiles(dir, options) {
       return
     }
     if (options.yes) {
-      corruptedFiles.forEach((f) => rimraf.sync(f))
+      corruptedFiles.forEach(f => rimraf.sync(f))
       return
     }
     new Confirm(
@@ -221,7 +267,7 @@ function _cleanCorruptedFiles(dir, options) {
         'Are you sure to delete all these files ?'
     ).ask(ans => {
       if (ans) {
-        corruptedFiles.forEach((f) => rimraf.sync(f))
+        corruptedFiles.forEach(f => rimraf.sync(f))
       }
     })
   })()
@@ -251,7 +297,7 @@ function _detectCorrupted(file) {
   return new Promise((resolve, reject) => {
     const sox = spawn('sox', [file, '-t', 'wav', '-'], { stdio: 'pipe' })
     var buffer = Buffer.alloc(0),
-        error = Buffer.alloc(0)
+      error = Buffer.alloc(0)
     sox.stdout.on('data', data => {
       buffer = Buffer.concat([buffer, data])
     })
@@ -262,7 +308,9 @@ function _detectCorrupted(file) {
       if (code === 0) {
         resolve()
       } else {
-        reject(new Error(`SoX exited with code:${code} stderr:${error.toString()}`))
+        reject(
+          new Error(`SoX exited with code:${code} stderr:${error.toString()}`)
+        )
       }
     })
   })
@@ -298,7 +346,10 @@ function execCommand(dir, options) {
     _checkJsFunction(options.clip)
   }
 
-  const numFiles = _glob(`${dir}/**/*.nksf`, options.skipExist ? _hasNotPreview : undefined).length
+  const numFiles = _glob(
+    `${dir}/**/*.nksf`,
+    options.skipExist ? _hasNotPreview : undefined
+  ).length
   if (!numFiles) {
     console.info('Target ".nksf" files are not found.')
     return
@@ -310,7 +361,8 @@ function execCommand(dir, options) {
   } else {
     // progress bar
     bar = new Bar({
-      format: 'progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} | {message}'
+      format:
+        'progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} | {message}'
     })
     bar.start(numFiles, 0, {
       message: 'waiting for start progress'
@@ -318,7 +370,7 @@ function execCommand(dir, options) {
   }
   // start the progress bar with a total value of 200 and start value of 0
 
-  nksf2ogg(dir, options, function(err, file) {
+  nksf2ogg(dir, options, function (err, file) {
     const message = _execHandleProgress(err, file)
     if (bar && message) {
       bar.update(summary.completed.length + summary.failed.length, {
@@ -329,7 +381,7 @@ function execCommand(dir, options) {
     // stop progress bar.
     if (bar) bar.stop()
   })
-  process.on('exit', (code) => {
+  process.on('exit', code => {
     if (!code) {
       _execReportSummary(summary)
     }
@@ -370,21 +422,29 @@ function _execHandleProgress(err, file) {
 
 function _execReportSummary(summary) {
   if (summary.stopCausedBy) {
-    console.info(chalk.redBright.bold('Execution done with error:'),
-      summary.stopCausedBy)
+    console.info(
+      chalk.redBright.bold('Execution done with error:'),
+      summary.stopCausedBy
+    )
     process.exit(1)
   }
   if (summary) {
     const results = []
-    results.push(chalk.greenBright(`${summary.completed.length} files succeeded`))
+    results.push(
+      chalk.greenBright(`${summary.completed.length} files succeeded`)
+    )
     if (summary.failed.length) {
       results.push(chalk.redBright(`${summary.failed.length} files failed`))
     }
     if (summary.ignored.length) {
-      results.push(chalk.yellowBright(`${summary.ignored.length} files ignored`))
+      results.push(
+        chalk.yellowBright(`${summary.ignored.length} files ignored`)
+      )
     }
-    console.info(chalk.greenBright.bold('Execution completed with result:'),
-      results.join(', ') + '.')
+    console.info(
+      chalk.greenBright.bold('Execution completed with result:'),
+      results.join(', ') + '.'
+    )
   }
 }
 
@@ -428,11 +488,11 @@ function _checkSoX() {
   try {
     const ret = execSync('sox --version')
     if (!ret || !ret.includes('SoX')) {
-      console.error('error: you don\'t have a executable [sox] command.')
+      console.error("error: you don't have a executable [sox] command.")
       process.exit(1)
     }
   } catch (err) {
-    console.error('error: you don\'t have a executable [sox] command.')
+    console.error("error: you don't have a executable [sox] command.")
     process.exit(1)
   }
 }
@@ -440,7 +500,7 @@ function _checkSoX() {
 function _glob(pattern, filter, options = {}) {
   let files = glob.sync(pattern, options)
   if (filter) {
-    files = files.filter((f) => {
+    files = files.filter(f => {
       return filter(f)
     })
   }
@@ -448,7 +508,11 @@ function _glob(pattern, filter, options = {}) {
 }
 
 function _hasPreview(file) {
-  const preview = path.join(path.dirname(file), '.previews', path.basename(file) + '.ogg')
+  const preview = path.join(
+    path.dirname(file),
+    '.previews',
+    path.basename(file) + '.ogg'
+  )
   return fs.existsSync(preview)
 }
 
@@ -457,7 +521,11 @@ function _hasNotPreview(file) {
 }
 
 function _hasPreset(file) {
-  const preset = path.resolve(path.dirname(file), '..', path.basename(file, '.ogg'))
+  const preset = path.resolve(
+    path.dirname(file),
+    '..',
+    path.basename(file, '.ogg')
+  )
   return fs.existsSync(preset)
 }
 

@@ -1,63 +1,60 @@
 {
-    "name": "bitwig-nks-preview-generator",
-    "version": "0.1.2",
-    "description": "Streaming convert NKSF files to preview audio with using Bitwig Studio.",
-    "engines": {
-        "node": ">=10.0.0"
-    },
-    "engineStrict": true,
-    "main": "index.js",
-    "scripts": {
-        "eslint": "eslint lib/*.js ./*.js bin/bws-nksf2ogg"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/jhorology/bitwig-nks-preview-generator.git"
-    },
-    "author": "Masafumi <jhorology2014@gmail.com>",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/jhorology/bitwig-nks-preview-generator/issues"
-    },
-    "homepage": "https://github.com/jhorology/bitwig-nks-preview-generator",
-    "bin": {
-        "bws-nksf2ogg": "./bin/bws-nksf2ogg"
-    },
-    "dependencies": {
-        "bitwig-websocket-rpc": "^0.1.3",
-        "chalk": "^2.4.2",
-        "cli-progress": "^2.1.1",
-        "coffeescript": "^2.4.1",
-        "commander": "^2.20.0",
-        "glob": "^7.1.4",
-        "gulp": "^4.0.2",
-        "gulp-plumber": "^1.2.1",
-        "msgpack-lite": "^0.1.26",
-        "plugin-error": "^1.0.1",
-        "progress-string": "^1.2.2",
-        "prompt-confirm": "^2.0.4",
-        "riff-reader": "0.0.10",
-        "rimraf": "^2.6.3",
-        "rpc-websockets": "^4.3.5",
-        "temp-file": "^3.3.2",
-        "through2": "^3.0.1",
-        "time-stamp": "^2.2.0",
-        "update-notifier": "^3.0.0"
-    },
-    "devDependencies": {
-        "eslint": "^5.16.0",
-        "eslint-config-standard": "^12.0.0",
-        "eslint-plugin-import": "^2.17.3",
-        "eslint-plugin-node": "^9.1.0",
-        "eslint-plugin-promise": "^4.1.1",
-        "eslint-plugin-standard": "^4.0.0",
-        "mkdirp": "^0.5.1"
-    },
-    "keywords": [
-        "bitwig",
-        "studio",
-        "komplete",
-        "kontrol",
-        "NKS"
-    ]
+  "name": "bitwig-nks-preview-generator",
+  "version": "0.2.0-SNAPSHOT",
+  "description": "Streaming convert NKSF files to preview audio with using Bitwig Studio.",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "engineStrict": true,
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --write lib/*.js ./*.js bin/bws-nksf2ogg",
+    "eslint": "eslint lib/*.js ./*.js bin/bws-nksf2ogg"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jhorology/bitwig-nks-preview-generator.git"
+  },
+  "author": "Masafumi <jhorology2014@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jhorology/bitwig-nks-preview-generator/issues"
+  },
+  "homepage": "https://github.com/jhorology/bitwig-nks-preview-generator",
+  "bin": {
+    "bws-nksf2ogg": "./bin/bws-nksf2ogg"
+  },
+  "dependencies": {
+    "bitwig-websocket-rpc": "file:../bitwig-websocket-rpc",
+    "chalk": "^4.1.0",
+    "cli-progress": "^3.8.2",
+    "coffeescript": "^2.5.1",
+    "commander": "^6.1.0",
+    "glob": "^7.1.6",
+    "gulp": "^4.0.2",
+    "gulp-plumber": "^1.2.1",
+    "msgpack-lite": "^0.1.26",
+    "plugin-error": "^1.0.1",
+    "prompt-confirm": "^2.0.4",
+    "riff-reader": "0.0.10",
+    "rimraf": "^3.0.2",
+    "temp-file": "^3.3.7",
+    "through2": "^4.0.2",
+    "time-stamp": "^2.2.0",
+    "update-notifier": "^4.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.9.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "mkdirp": "^1.0.4",
+    "prettier": "^2.1.2"
+  },
+  "keywords": [
+    "bitwig",
+    "studio",
+    "komplete",
+    "kontrol",
+    "NKS"
+  ]
 }
