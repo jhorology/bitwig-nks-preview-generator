@@ -5,6 +5,7 @@ const fs = require('fs'),
   readline = require('readline'),
   program = require('commander'),
   { spawn, execSync } = require('child_process'),
+  { installExtension, defaultExtensionsDir } = require('bitwig-websocket-rpc'),
   updateNotifier = require('update-notifier'),
   rimraf = require('rimraf'),
   glob = require('glob'),
@@ -12,8 +13,8 @@ const fs = require('fs'),
   { Bar } = require('cli-progress'),
   chalk = require('chalk'),
   nksf2ogg = require('../lib/bitwig-nks-preview-generator'),
-  Local = require('../lib/bitwig-studio-local'),
   logger = require('../lib/logger'),
+  { isWSL } = require('../lib/wsl-util'),
   {
     PluginProcessingError,
     PluginDiscardFile
@@ -45,6 +46,7 @@ program
   .option('-r, --dry-run', descs.dryRun, defaults.dryRun)
   .option('-b, --bitwig <path>', descs.bitwig, defaults.bitwig)
   .option('-u, --url <URL>', descs.url, defaults.url)
+  .option('-p, --pass <password>', descs.pass)
   .option('-s, --skip-error', descs.skipError)
   .option('-k, --skip-exist', descs.skipExist)
   .option('-h, --show-plugin', descs.showPlugin)
@@ -75,13 +77,13 @@ program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
   .option(
-    '-e, --extension-dir <path>',
-    'Bitwig Studio Extension directory',
-    Local.defaultExtensionDir()
+    '-e, --extensions-dir <path>',
+    'The absolute path of Bitwig Studio Extensions directory',
+    defaultExtensionsDir()
   )
   .option(
     '-a, --api <version>',
-    'Version of Bitwig Control Surface API',
+    'The version of Bitwig Control Surface API',
     '12'
   )
   .action(installCommand)
@@ -138,18 +140,14 @@ function floatArg(val, def) {
  * @param {Object} options
  */
 function installCommand(options) {
-  _checkDir(options.extensionDir)
-  const basename = `WebSocketRpcServer-API${options.api}.bwextension`
-  const src = path.resolve(
-    __dirname,
-    '../node_modules/bitwig-websocket-rpc',
-    basename
-  )
-  const dest = path.join(options.extensionDir, basename)
-  _checkFile(src)
-  fs.copyFileSync(src, dest)
-  console.info('file:', dest)
-  console.info('Installation completed successfully.')
+  try {
+    const files = installExtension(options)
+    console.info('file:', files[0])
+    console.info('Installation completed successfully.')
+  } catch (err) {
+    console.error(err.message)
+    process.exit(1)
+  }
 }
 
 /**
@@ -331,6 +329,7 @@ const summary = {
  * @param {Object} options
  */
 function execCommand(dir, options) {
+  _checkWSL()
   _checkSoX()
   _checkDir(dir)
   _checkFile(options.bitwig)
@@ -480,6 +479,15 @@ function _checkJsFunction(file) {
   }
   if (typeof fn !== 'function') {
     console.error('error: --clip <path> .js file should export function')
+    process.exit(1)
+  }
+}
+
+function _checkWSL() {
+  // only support WSL2, I don't have WSL1 anymore.
+  const wsl = isWSL()
+  if (wsl && wsl !== 2) {
+    console.error(`error: WSL ${wsl} is not supported.`)
     process.exit(1)
   }
 }
