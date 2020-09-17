@@ -369,7 +369,7 @@ function execCommand(dir, options) {
   }
   // start the progress bar with a total value of 200 and start value of 0
 
-  nksf2ogg(dir, options, function (err, file) {
+  const stream = nksf2ogg(dir, options, function (err, file) {
     const message = _execHandleProgress(err, file)
     if (bar && message) {
       bar.update(summary.completed.length + summary.failed.length, {
@@ -377,6 +377,8 @@ function execCommand(dir, options) {
       })
     }
   }).on('end', () => {
+    stream.unpipe()
+    stream.destroy()
     // stop progress bar.
     if (bar) bar.stop()
   })
