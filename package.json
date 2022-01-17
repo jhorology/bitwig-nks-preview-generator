@@ -26,11 +26,11 @@
   },
   "dependencies": {
     "bitwig-websocket-rpc": "file:../bitwig-websocket-rpc",
-    "chalk": "^4.1.0",
-    "cli-progress": "^3.8.2",
-    "coffeescript": "^2.5.1",
-    "commander": "^6.2.0",
-    "glob": "^7.1.6",
+    "chalk": "^4.1.2",
+    "cli-progress": "^3.10.0",
+    "coffeescript": "^2.6.1",
+    "commander": "^8.3.0",
+    "glob": "^7.2.0",
     "gulp": "^4.0.2",
     "gulp-plumber": "^1.2.1",
     "msgpack-lite": "^0.1.26",
@@ -38,23 +38,17 @@
     "prompt-confirm": "^2.0.4",
     "riff-reader": "0.0.10",
     "rimraf": "^3.0.2",
-    "temp-file": "^3.3.7",
+    "temp-file": "^3.4.0",
     "through2": "^4.0.2",
     "time-stamp": "^2.2.0",
-    "update-notifier": "^5.0.1"
+    "update-notifier": "^5.1.0"
   },
   "devDependencies": {
-    "eslint": "^7.15.0",
-    "eslint-config-prettier": "^7.0.0",
-    "eslint-plugin-prettier": "^3.2.0",
+    "eslint": "^8.7.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "mkdirp": "^1.0.4",
-    "prettier": "^2.2.1"
+    "prettier": "^2.5.1"
   },
-  "keywords": [
-    "bitwig",
-    "studio",
-    "komplete",
-    "kontrol",
-    "NKS"
-  ]
+  "keywords": ["bitwig", "studio", "komplete", "kontrol", "NKS"]
 }
