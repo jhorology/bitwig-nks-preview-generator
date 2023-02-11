@@ -41,7 +41,7 @@
     "temp-file": "^3.4.0",
     "through2": "^4.0.2",
     "time-stamp": "^2.2.0",
-    "update-notifier": "^5.1.0"
+    "update-notifier": "^6.0.2"
   },
   "devDependencies": {
     "eslint": "^8.7.0",
